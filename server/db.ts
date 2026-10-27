@@ -1,3 +1,4 @@
+import type {Pipeline} from './agents/schemas.ts';
 import './config.ts';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
@@ -149,6 +150,7 @@ export interface StudyPlan {
 }
 
 export interface DatabaseSchema {
+  pipelines: Pipeline[];
   users: User[];
   otps: OtpRecord[];
   auditLogs: AuditLogRecord[];
@@ -163,6 +165,7 @@ export interface DatabaseSchema {
 
 function initialData(): DatabaseSchema {
   return {
+    pipelines: [],
     users: [],
     otps: [],
     auditLogs: [],
@@ -195,7 +198,7 @@ export class JSONDatabase {
       // Fail closed on corrupt data; never overwrite the only copy.
       this.data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
       for (const key of Object.keys(initialData()) as (keyof DatabaseSchema)[]) {
-        if (this.data[key] === undefined && ['otps','auditLogs'].includes(key)) (this.data as any)[key] = [];
+        if (this.data[key] === undefined && ['otps','auditLogs','pipelines'].includes(key)) (this.data as any)[key] = [];
         if (!Array.isArray(this.data[key])) throw new Error(`Invalid database collection: ${key}`);
       }
       this.committed = JSON.stringify(this.data);
@@ -206,7 +209,7 @@ export class JSONDatabase {
     const temporary = DB_FILE + '.' + randomUUID() + '.tmp';
     try {
       const owners=new Set(this.data.users.map(u=>u.id));
-      for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans'] as const) {
+      for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans','pipelines'] as const) {
         if(this.data[key].some(record=>!owners.has(record.userId))) throw new Error('Cannot save records for a deleted account.');
       }
       const json = JSON.stringify(this.data);

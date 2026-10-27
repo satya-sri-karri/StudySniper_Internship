@@ -1,0 +1,18 @@
+import {z} from 'zod';
+const text=(max=200)=>z.string().trim().min(1).max(max);
+export const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>Number.isFinite(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s,'Invalid date');
+export const futureDate=date.refine(s=>s>=new Date().toISOString().slice(0,10)&&Date.parse(s)-Date.now()<=366*86400000,'Exam must be within the next year');
+export const parserSchema=z.object({title:text(),units:z.array(z.object({name:text(),examDate:date.nullable(),dateQuote:text(500).nullable(),topics:z.array(z.object({name:text(),weightage:z.number().min(0).max(100).nullable(),weightageQuote:text(500).nullable(),sourceQuote:text(1000)})).min(1).max(30)})).min(1).max(20)}).refine(p=>p.units.reduce((n,u)=>n+u.topics.length,0)<=60,'At most 60 topics');
+export const analyzerSchema=z.object({topics:z.array(z.object({topicId:text(),difficulty:z.number().int().min(1).max(5),importance:z.number().int().min(1).max(5),reason:text(600)})).min(1).max(60)});
+export const plannerSchema=z.object({tasks:z.array(z.object({topicId:text(),day:date,durationMinutes:z.number().int().min(5).max(720)})).min(1).max(300)});
+export const coachSchema=z.object({questions:z.array(z.object({question:text(2000),expectedAnswer:text(3000),sourceQuote:text(1500)})).length(3)});
+export const evaluatorSchema=z.object({grades:z.array(z.object({questionId:text(),score:z.number().min(0).max(1),feedback:text(1500),sourceQuote:text(1500)})).length(3)});
+export const startSchema=z.object({documentId:text(),dailyHours:z.number().min(0.25).max(12),examDate:futureDate.optional()});
+export const preferencesSchema=z.object({priorities:z.record(text(),z.number().int().min(1).max(5)).refine(p=>Object.keys(p).length<=60).default({})});
+export const quizInput=z.object({topicId:text()});
+export const answersSchema=z.object({answers:z.record(text(),z.string().trim().max(4000)).refine(a=>Object.keys(a).length<=3)});
+export type Parsed=z.infer<typeof parserSchema>;
+export type Topic={id:string;name:string;unit:string;examDate:string;weightage:number|null;sourceQuote:string};
+export type Assessment={id:string;topicId:string;questions:(z.infer<typeof coachSchema>['questions'][number]&{id:string})[];grades?:z.infer<typeof evaluatorSchema>['grades'];answers?:Record<string,string>;score?:number;completedAt?:string};
+export type Pipeline={id:string;userId:string;documentId:string;title:string;dailyHours:number;createdAt:string;parser:Parsed;topics:Topic[];analysis?:z.infer<typeof analyzerSchema>;priorities?:Record<string,number>;planId?:string;assessments:Assessment[];mastery:Record<string,{score:number;attempts:number;updatedAt:string}>};
+export type PublicPipeline=Omit<Pipeline,'assessments'> & {assessments:(Omit<Assessment,'questions'>&{questions:{id:string;question:string;expectedAnswer?:string;sourceQuote?:string}[]})[]};

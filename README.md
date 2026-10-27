@@ -1,6 +1,6 @@
-# StudySniper AI — Step 2 hardening
+# StudySniper AI — validated syllabus agents
 
-A React study workspace with tutor chat, document Q&A, quizzes, flashcards, notes, a study planner, and activity summaries. This release fixes the audited security and reliability problems. The multi-agent syllabus pipeline, adaptive mastery/replanning, scheduled reminders, and readiness scoring are subsequent steps, not implemented claims.
+A React study workspace with tutor chat, document Q&A, quizzes, flashcards, notes, a study planner, and activity summaries. This release fixes the audited security and reliability problems. Step 3 adds a validated syllabus-to-plan pipeline and source-grounded practice with saved topic mastery. Adaptive replanning, scheduled reminders, spaced-repetition due queues and overall readiness scoring remain subsequent steps.
 
 ## Actual stack
 
@@ -63,10 +63,45 @@ Set `TRUST_PROXY_HOPS` only to the actual number of trusted reverse proxies (def
 - Account deletion requires the current local password or a fresh Google reauthentication, and removes the account's study records. Google deletion is performed before local data removal; if a local disk failure follows, retain the backup and resolve the failed local cleanup before continuing.
 - Quiz/flashcard generation requires an owned uploaded source. Keyword retrieval considers the whole extracted document; generated questions/cards must include matching source quotes. Document answers expose supporting excerpts or report insufficient evidence. Citation checks improve traceability but do not prove semantic correctness; review generated material before relying on it.
 - Model JSON gets at most two attempts and must satisfy runtime schemas. Plans must use real dates within the exam window and fit the daily hours. There is no adaptive rescheduling in this step.
-- Quizzes are graded on the server. MCQ and text answers use normalized exact matching, not substring matching. Free-text semantic/LLM grading is reserved for the Evaluator step. Attempt history is retained (latest 50 per quiz).
+- Quizzes are graded on the server. MCQ and text answers use normalized exact matching, not substring matching. The separate syllabus-agent practice flow uses source-grounded LLM grading; existing standalone quizzes retain exact matching. Attempt history is retained (latest 50 per quiz).
 - PDF/DOCX/PPTX and listed text formats are limited to 10 MB; PDFs/PPTX to 100 pages/slides; extracted text to 200,000 characters. Scanned PDFs need prior OCR. Legacy DOC/PPT are rejected rather than falsely “indexed.” Archive expansion is bounded. The PDF worker ships locally.
 - Document upload saves real extracted text even if an optional AI summary fails; the summary is clearly labeled as a source preview. Long-document summaries explicitly identify their first-20,000-character scope. Note-generation input is capped at 20,000 characters.
 - AI requests have per-user hourly limits, two concurrent requests per user, and bounded provider timeouts. Limits are local to this single server process and reset on restart.
 - Flashcards retain the existing review history; due-date spaced repetition is still pending. Dashboard hours are estimates, not measured readiness. The timer is not persisted. Static notifications were removed rather than presented as proactive reminders.
 
 See `STEP2_CHANGELOG.md` for audit coverage, validation evidence, and every changed file with its full workspace path. `STEP2_FULL_CHANGED_FILES.md` contains complete changed source files; the npm lockfile is supplied separately in full.
+
+
+## Step 3: syllabus agents
+
+Open **Study Planner → Syllabus → plan → practice** after uploading a readable syllabus in Documents.
+
+1. Select the source, available hours, and optional exam-date override; click **Parse & analyze syllabus**.
+2. Review extracted units/topics and source evidence. Missing weightage stays unknown. Difficulty and importance are explicitly AI estimates. Set your priorities from 1 to 5.
+3. Click **Generate day-wise plan**. Every topic must be covered within its exam window and the total daily time budget. The result also appears in the existing timetable checklist.
+4. Click **Practice** on a topic, answer three questions, then **Grade answers & update mastery**. Feedback, evidence and assessment history persist across reloads. Mastery is the arithmetic mean of that topic's completed practice scores; it is not an exam prediction.
+
+```mermaid
+flowchart TD
+  S[Uploaded source] --> P[Parser]
+  P --> A[Analyzer]
+  A --> L[Planner]
+  U[Hours and priorities] --> L
+  L --> D[Saved timetable]
+  S --> C[Coach]
+  C --> Q[Three-question practice]
+  Q --> E[Evaluator]
+  E --> M[Saved topic mastery]
+```
+
+Each agent uses its own prompt and runtime Zod schema, with at most two provider attempts for invalid JSON, wrong IDs or unsupported evidence. These are specialized stages using the same configured Gemini model; no extra agent framework or dependency is installed. Each stage is a separate bounded request, so completed stages survive a later failure. There is no under-one-minute guarantee: provider latency and retries determine completion time.
+
+- Parsing supports up to 30,000 extracted characters and 60 topics; larger documents are explicitly rejected instead of silently truncated. PDF extraction uses the existing bounded parser.
+- Dates are accepted from the source only when explicitly ISO-formatted; provide an override for missing, past or differently formatted dates. The override applies to every unit. Weightage is extracted only when expressed as a percentage.
+- Topic headings support planning, but practice requires explanatory evidence in the selected document. Insufficient evidence fails visibly; upload syllabus plus notes together for substantive quizzes.
+- Agent-created assessments are separate from legacy standalone quizzes. Only the new practice flow updates pipeline topic mastery in this step. Auto-replanning and integration into the Analytics Dashboard remain Step 4.
+- Agent routes use the same authenticated per-user rate and concurrency limits. Run-specific locking prevents duplicate concurrent stage writes; repeated completed stage/evaluation requests do not duplicate plans or mastery updates.
+- Old databases automatically initialize the new `pipelines` collection. Account deletion removes it with the user's other data. Deleting a pipeline explicitly keeps its separately saved timetable.
+- Limits: 20 saved pipelines and 100 assessments per pipeline. Source quotes improve traceability, but semantic evaluation remains an AI estimate requiring review.
+
+Tests use mocked provider responses and temporary databases. Live Gemini/SMTP/Firebase calls and browser/mobile visual checks have not been verified in this environment.

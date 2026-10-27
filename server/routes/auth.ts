@@ -100,7 +100,7 @@ router.delete('/account',authenticateToken,async(req:AuthRequest,res)=>{
  } else if(!req.body.password || !await bcrypt.compare(req.body.password,user.passwordHash)) throw new HttpError(400,'Confirm your current password.');
  const chats=new Set(db.get.chats.filter(c=>c.userId===user.id).map(c=>c.id));
  db.get.messages=db.get.messages.filter(m=>!chats.has(m.chatId));
- for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans','auditLogs'] as const) (db.get as any)[key]=db.get[key].filter((x:any)=>x.userId!==user.id);
+ for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans','pipelines','auditLogs'] as const) (db.get as any)[key]=db.get[key].filter((x:any)=>x.userId!==user.id);
  db.get.otps=db.get.otps.filter(o=>o.email!==user.email);db.get.users=db.get.users.filter(u=>u.id!==user.id);db.save();res.json({message:'Account and study data deleted.'});
 });
 router.get('/config',(_req,res)=>res.json({demo:config.demo}));

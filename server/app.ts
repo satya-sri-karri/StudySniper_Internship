@@ -1,3 +1,4 @@
+import agentsRouter from './routes/agents.ts';
 import { config } from './config.ts';
 import { authenticateToken, type AuthRequest } from './middleware/auth.ts';
 import { validateRequest } from './validation.ts';
@@ -52,7 +53,7 @@ app.use('/api', validateRequest);
 const aiLimiter=rateLimit({windowMs:3600000,limit:30,keyGenerator:(req:AuthRequest)=>req.user!.userId,standardHeaders:true,legacyHeaders:false,message:{error:'AI request limit reached. Retry later.'}});
 const active=new Map<string,number>();
 app.use('/api',(req:AuthRequest,res,next)=>{
- if(req.method!=='POST' || !/^\/(chat\/message|documents\/(upload|[^/]+\/(ask|explain-section))|quiz\/generate|flashcards\/generate|study-planner\/generate|notes\/generate|coding\/analyze)$/.test(req.path)) return next();
+ if(req.method!=='POST' || !/^\/(agents\/(parse|[^/]+\/(analyze|plan|quiz|assessments\/[^/]+\/evaluate))|chat\/message|documents\/(upload|[^/]+\/(ask|explain-section))|quiz\/generate|flashcards\/generate|study-planner\/generate|notes\/generate|coding\/analyze)$/.test(req.path)) return next();
  authenticateToken(req,res,()=>aiLimiter(req,res,()=>{
   const id=req.user!.userId;
   if((active.get(id)||0)>=2) return res.status(429).json({error:'Two AI requests are already running. Please wait.'});
@@ -79,6 +80,7 @@ app.use('/api/study-planner', studyPlanRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/coding', codingRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/agents', agentsRouter);
 
 app.use('/api',(_req,res)=>res.status(404).json({error:'API endpoint not found.'}));
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

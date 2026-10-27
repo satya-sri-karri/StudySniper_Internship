@@ -1,3 +1,4 @@
+import {SyllabusAgentPanel} from './SyllabusAgentPanel';
 import { LoadState } from '../common/LoadState';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -115,6 +116,7 @@ export const StudyPlannerView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in pb-12">
       <LoadState loading={initialLoading} error={loadError} retry={loadPlans} />
+      <SyllabusAgentPanel onPlan={plan=>{setPlans(prev=>[plan,...prev.filter(p=>p.id!==plan.id)]);setActivePlan(plan);}} />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
