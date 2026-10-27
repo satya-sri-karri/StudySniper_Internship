@@ -1,0 +1,11 @@
+import { config } from '../server/config.ts';
+import { createDemoUser } from '../server/services/demo.ts';
+import { db } from '../server/db.ts';
+import { randomBytes } from 'crypto';
+import bcrypt from 'bcryptjs';
+if (!config.demo) throw new Error('Set ENABLE_DEMO=true in development to seed synthetic data.');
+const user=createDemoUser();
+const password=randomBytes(18).toString('base64url')+'!9aA';
+user.passwordHash=await bcrypt.hash(password,12);db.save();
+console.log('Synthetic demo account created. Keep these local credentials private.');
+console.log(JSON.stringify({email:user.email,password},null,2));
