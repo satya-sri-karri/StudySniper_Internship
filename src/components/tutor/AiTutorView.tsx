@@ -1,3 +1,4 @@
+import {SourceSelect} from '../common/SourceSelect';
 import React, { useState, useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export const AiTutorView: React.FC = () => {
+  const [documentId,setDocumentId]=useState('');
   const { activeChatId, setActiveChatId, showToast } = useAuth();
 
   const [chats, setChats] = useState<Chat[]>([]);
@@ -117,12 +119,13 @@ export const AiTutorView: React.FC = () => {
   const handleSend = async (customPrompt?: string) => {
     const text=(customPrompt || prompt).trim();
     if(!text || loading || !activeChatId) return;
+    if(!documentId){showToast('Choose an uploaded source first.','error');return;}
     const chatId=activeChatId, temporary='pending_'+Date.now();
     setPrompt('');setLoading(true);
     setMessages(prev=>[...prev,{id:temporary+'_user',chatId,role:'user',content:text,timestamp:new Date().toISOString()},{id:temporary,chatId,role:'model',content:'',timestamp:new Date().toISOString()}]);
     controllerRef.current?.abort();const controller=new AbortController();controllerRef.current=controller;
     try {
-      const response=await fetch('/api/chat/message',{method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(65000)]),headers:{'Content-Type':'application/json',Authorization:`Bearer ${localStorage.getItem('studysniper_token')}`},body:JSON.stringify({chatId,prompt:text,systemPrompt:personas.find(p=>p.id===persona)?.desc})});
+      const response=await fetch('/api/chat/message',{method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(65000)]),headers:{'Content-Type':'application/json',Authorization:`Bearer ${localStorage.getItem('studysniper_token')}`},body:JSON.stringify({chatId,prompt:text,documentId,systemPrompt:personas.find(p=>p.id===persona)?.desc})});
       if(!response.ok){const error=await response.json();throw new Error(error.error || 'Chat request failed.');}
       if(!response.body) throw new Error('No response stream.');
       const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',content='',completed=false;
@@ -182,6 +185,7 @@ export const AiTutorView: React.FC = () => {
     <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-4 animate-fade-in">
       {/* Left Chat History List */}
       <div className="w-full md:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-3 flex flex-col shrink-0 shadow-sm">
+      <div className="p-3 border-b border-slate-700"><SourceSelect value={documentId} onChange={setDocumentId}/><p className="text-xs text-slate-400">Answers use only this source; ask specific questions for reliable retrieval.</p></div>
         <button
           onClick={handleCreateNewChat}
           className="w-full py-2.5 px-3 mb-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-2xl shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition"

@@ -1,3 +1,4 @@
+import {LearningOverview} from '../dashboard/LearningOverview';
 import { SourceSelect } from '../common/SourceSelect';
 import { LoadState } from '../common/LoadState';
 import React, { useState, useEffect } from 'react';
@@ -21,6 +22,7 @@ export const FlashcardsView: React.FC = () => {
   const { showToast, updateUser } = useAuth();
 
   const [documentId,setDocumentId]=useState('');
+  const [dueOnly,setDueOnly]=useState(true),[reviewing,setReviewing]=useState(false);
   const [loadError,setLoadError]=useState('');
   const [initialLoading,setInitialLoading]=useState(true);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -107,15 +109,17 @@ export const FlashcardsView: React.FC = () => {
 
   const handleReviewRating = async (rating: 'again' | 'hard' | 'good' | 'easy') => {
     const card = filteredCards[currentIndex];
-    if (!card) return;
+    if (!card || reviewing) return;
+    setReviewing(true);
 
     try {
       const res = await api.reviewFlashcard(card.id, rating);
       if (res.user) {
         updateUser(res.user);
       }
+      setFlashcards(prev=>prev.map(c=>c.id===card.id?res.flashcard:c));
       setIsFlipped(false);
-      if (currentIndex < filteredCards.length - 1) {
+      if (dueOnly) {setCurrentIndex(0);} else if (currentIndex < filteredCards.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
         setCurrentIndex(0);
@@ -123,7 +127,7 @@ export const FlashcardsView: React.FC = () => {
       }
     } catch (e: any) {
       showToast(e.message || 'Request failed. Please retry.', 'error');
-    }
+    } finally {setReviewing(false);}
   };
 
   const handleDeleteCard = async (id: string, e?: React.MouseEvent) => {
@@ -144,15 +148,16 @@ export const FlashcardsView: React.FC = () => {
   const deckTitles = Array.from(new Set(flashcards.map(f => f.deckTitle))).filter(Boolean);
 
   // Filter cards by selected deck
-  const filteredCards = selectedDeck === 'ALL'
-    ? flashcards
-    : flashcards.filter(f => f.deckTitle === selectedDeck);
+  const filteredCards = flashcards.filter(f=>(selectedDeck==='ALL'||f.deckTitle===selectedDeck)&&(!dueOnly||!f.nextReview||f.nextReview<=new Date().toISOString().slice(0,10)));
 
   const currentCard = filteredCards[currentIndex];
 
   return (
     <div className="space-y-6 animate-fade-in pb-12">
       <LoadState loading={initialLoading} error={loadError} retry={loadCards} />
+      <LearningOverview reviews />
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={dueOnly} onChange={e=>{setDueOnly(e.target.checked);setCurrentIndex(0);setIsFlipped(false);}}/>Show only flashcards due today (UTC)</label>
+      <p className="text-xs">{filteredCards.length} cards in this view. {currentCard?.nextReview&&`Current card due: ${currentCard.nextReview}`}</p>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -160,7 +165,7 @@ export const FlashcardsView: React.FC = () => {
             <Layers className="w-6 h-6 text-pink-500 dark:text-pink-400" /> AI Spaced-Repetition Flashcards
           </h1>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-            Master definitions, key formulas, and terms using interactive 3D cards and SM-2 memory intervals.
+            Master definitions, key formulas, and terms using interactive 3D cards and fixed 1, 3, 7, 14 and 30-day review intervals.
           </p>
         </div>
 
@@ -371,7 +376,7 @@ export const FlashcardsView: React.FC = () => {
                 className="w-full min-h-[18rem] rounded-3xl cursor-pointer perspective-1000 group transition-transform duration-300 hover:scale-[1.01]"
               >
                 <div
-                  className={`w-full min-h-[18rem] rounded-3xl p-8 bg-gradient-to-tr from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border-2 ${
+                  className={`w-full min-h-[18rem] rounded-3xl p-8 bg-gradient-to-tr from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-2 ${
                     isFlipped ? 'border-pink-500/50' : 'border-purple-500/40'
                   } shadow-xl flex flex-col justify-between items-center text-center transition-all duration-500 relative`}
                 >
@@ -392,34 +397,38 @@ export const FlashcardsView: React.FC = () => {
               {/* Spaced Repetition Rating Buttons */}
               <div className="grid grid-cols-4 gap-2 pt-2">
                 <button
-                  onClick={() => handleReviewRating('again')}
+                  disabled={reviewing || (!!currentCard?.nextReview && currentCard.nextReview>new Date().toISOString().slice(0,10))}
+                          onClick={() => handleReviewRating('again')}
                   className="py-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 hover:bg-rose-500/20 dark:hover:bg-rose-500/30 border border-rose-500/30 dark:border-rose-500/40 text-rose-600 dark:text-rose-300 font-bold text-xs transition"
                 >
-                  Again <span className="block text-[9px] font-normal text-rose-500 dark:text-rose-400">1 min</span>
+                  Again <span className="block text-[9px] font-normal text-rose-500 dark:text-rose-400">1 day</span>
                 </button>
                 <button
-                  onClick={() => handleReviewRating('hard')}
+                  disabled={reviewing || (!!currentCard?.nextReview && currentCard.nextReview>new Date().toISOString().slice(0,10))}
+                          onClick={() => handleReviewRating('hard')}
                   className="py-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 hover:bg-amber-500/20 dark:hover:bg-amber-500/30 border border-amber-500/30 dark:border-amber-500/40 text-amber-600 dark:text-amber-300 font-bold text-xs transition"
                 >
                   Hard <span className="block text-[9px] font-normal text-amber-500 dark:text-amber-400">1 day</span>
                 </button>
                 <button
-                  onClick={() => handleReviewRating('good')}
+                  disabled={reviewing || (!!currentCard?.nextReview && currentCard.nextReview>new Date().toISOString().slice(0,10))}
+                          onClick={() => handleReviewRating('good')}
                   className="py-2.5 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 hover:bg-blue-500/20 dark:hover:bg-blue-500/30 border border-blue-500/30 dark:border-blue-500/40 text-blue-600 dark:text-blue-300 font-bold text-xs transition"
                 >
-                  Good <span className="block text-[9px] font-normal text-blue-500 dark:text-blue-400">3 days</span>
+                  Good <span className="block text-[9px] font-normal text-blue-500 dark:text-blue-400">{[1,3,7,14,30][Math.min(4,(currentCard.reviewStep??-1)+1)]} days</span>
                 </button>
                 <button
-                  onClick={() => handleReviewRating('easy')}
+                  disabled={reviewing || (!!currentCard?.nextReview && currentCard.nextReview>new Date().toISOString().slice(0,10))}
+                          onClick={() => handleReviewRating('easy')}
                   className="py-2.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/30 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-300 font-bold text-xs transition"
                 >
-                  Easy <span className="block text-[9px] font-normal text-emerald-500 dark:text-emerald-400">7 days</span>
+                  Easy <span className="block text-[9px] font-normal text-emerald-500 dark:text-emerald-400">{[1,3,7,14,30][Math.min(4,(currentCard.reviewStep??-1)+1)]} days</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
-              {selectedDeck !== 'ALL'
+              {dueOnly ? 'No cards due in this view. Turn off the due filter to browse upcoming cards.' : selectedDeck !== 'ALL'
                 ? `No flashcards in deck "${selectedDeck}". Select "All Cards" or generate a new deck.`
                 : 'No flashcards found. Enter a topic on the left and click "Generate Flashcards" to start!'}
             </div>

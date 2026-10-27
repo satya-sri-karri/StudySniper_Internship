@@ -52,7 +52,7 @@ const MainLayout: React.FC = () => {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Right Main Column */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen transition-all">
+      <div className="min-w-0 flex-1 lg:pl-64 flex flex-col min-h-screen transition-all">
         {/* Top Header Navigation */}
         <Header
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -60,7 +60,7 @@ const MainLayout: React.FC = () => {
         />
 
         {/* Dashboard Content Container */}
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="min-w-0 flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">
           <Suspense fallback={<p role="status">Loading study tool…</p>}>
           {activeTab === 'dashboard' && <DashboardOverview />}
           {activeTab === 'tutor' && <AiTutorView />}

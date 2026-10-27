@@ -93,6 +93,8 @@ export interface Note {
 }
 
 export interface Flashcard {
+  nextReview?: string;
+  reviewStep?: number;
   id: string;
   userId: string;
   deckTitle: string;
@@ -116,6 +118,9 @@ export interface QuizQuestion {
 }
 
 export interface Quiz {
+  documentId?: string;
+  pipelineId?: string;
+  topicId?: string;
   id: string;
   userId: string;
   title: string;
@@ -125,11 +130,14 @@ export interface Quiz {
   score?: number;
   totalQuestions: number;
   completedAt?: string;
-  attempts?: { score: number; answers: Record<string,string>; completedAt: string }[];
+  attempts?: { id?: string; score: number; answers: Record<string,string>; completedAt: string }[];
   createdAt: string;
 }
 
 export interface StudyTask {
+  topicId?: string;
+  unscheduled?: boolean;
+  kind?: "reinforcement";
   id: string;
   day: string; // e.g. "Day 1", "Monday"
   subject: string;
@@ -139,6 +147,9 @@ export interface StudyTask {
 }
 
 export interface StudyPlan {
+  lastReplannedAt?: string;
+  replanReason?: string;
+  unscheduledMinutes?: number;
   id: string;
   userId: string;
   title: string;
@@ -150,6 +161,7 @@ export interface StudyPlan {
 }
 
 export interface DatabaseSchema {
+  notifications: {id:string;userId:string;title:string;message:string;day:string;read:boolean}[];
   pipelines: Pipeline[];
   users: User[];
   otps: OtpRecord[];
@@ -165,6 +177,7 @@ export interface DatabaseSchema {
 
 function initialData(): DatabaseSchema {
   return {
+    notifications: [],
     pipelines: [],
     users: [],
     otps: [],
@@ -198,7 +211,7 @@ export class JSONDatabase {
       // Fail closed on corrupt data; never overwrite the only copy.
       this.data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
       for (const key of Object.keys(initialData()) as (keyof DatabaseSchema)[]) {
-        if (this.data[key] === undefined && ['otps','auditLogs','pipelines'].includes(key)) (this.data as any)[key] = [];
+        if (this.data[key] === undefined && ['otps','auditLogs','pipelines','notifications'].includes(key)) (this.data as any)[key] = [];
         if (!Array.isArray(this.data[key])) throw new Error(`Invalid database collection: ${key}`);
       }
       this.committed = JSON.stringify(this.data);
@@ -209,7 +222,7 @@ export class JSONDatabase {
     const temporary = DB_FILE + '.' + randomUUID() + '.tmp';
     try {
       const owners=new Set(this.data.users.map(u=>u.id));
-      for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans','pipelines'] as const) {
+      for(const key of ['chats','documents','notes','flashcards','quizzes','studyPlans','pipelines','notifications'] as const) {
         if(this.data[key].some(record=>!owners.has(record.userId))) throw new Error('Cannot save records for a deleted account.');
       }
       const json = JSON.stringify(this.data);

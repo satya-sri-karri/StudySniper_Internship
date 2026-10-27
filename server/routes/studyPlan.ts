@@ -1,3 +1,9 @@
+import {maintainUser} from '../services/progress.ts';
+import {rebalance} from '../services/learning.ts';
+import {calendar} from '../services/calendar.ts';
+import {HttpError} from '../http.ts';
+import {z} from 'zod';
+import {futureDate} from '../agents/schemas.ts';
 import { Router } from '../http.ts';
 import { Response } from 'express';
 import { db, StudyPlan } from '../db.ts';
@@ -9,6 +15,7 @@ const router = Router();
 // Get study plans
 router.get('/', authenticateToken, (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
+  maintainUser(userId);
   const plans = db.get.studyPlans
     .filter(p => p.userId === userId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -76,6 +83,7 @@ router.put('/:id/task/:taskId/toggle', authenticateToken, (req: AuthRequest, res
     return res.status(404).json({ error: 'Task not found in study plan' });
   }
 
+  if(task.unscheduled)throw new HttpError(409,'Reschedule this task before marking it complete.');
   task.completed = !task.completed;
   db.save();
 
@@ -98,4 +106,20 @@ router.delete('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
   return res.json({ success: true });
 });
 
+router.post('/:id/replan',authenticateToken,(req:AuthRequest,res)=>{
+ const plan=db.get.studyPlans.find(p=>p.id===req.params.id&&p.userId===req.user!.userId);
+ if(!plan)throw new HttpError(404,'Plan not found.');
+ const input=z.object({dailyHours:z.number().min(0.25).max(12).optional(),examDate:futureDate.optional()}).safeParse(req.body);
+ if(!input.success)throw new HttpError(400,'Invalid hours or exam date.');
+ const run=db.get.pipelines.find(p=>p.planId===plan.id&&p.userId===req.user!.userId);
+ if(input.data.dailyHours){plan.dailyHours=input.data.dailyHours;if(run)run.dailyHours=input.data.dailyHours;}
+ if(input.data.examDate){plan.examDate=input.data.examDate;if(run)for(const t of run.topics)t.examDate=input.data.examDate;}
+ rebalance(plan,run,'Availability updated');db.save();res.json({studyPlan:plan});
+});
+router.get('/:id/calendar',authenticateToken,(req:AuthRequest,res)=>{
+ maintainUser(req.user!.userId);
+ const plan=db.get.studyPlans.find(p=>p.id===req.params.id&&p.userId===req.user!.userId);
+ if(!plan)throw new HttpError(404,'Plan not found.');
+ res.json({fileName:'studysniper-plan.ics',content:calendar(plan)});
+});
 export default router;

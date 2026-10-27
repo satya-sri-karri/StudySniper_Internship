@@ -1,3 +1,4 @@
+import {PlanActions} from './PlanActions';
 import {SyllabusAgentPanel} from './SyllabusAgentPanel';
 import { LoadState } from '../common/LoadState';
 import React, { useState, useEffect } from 'react';
@@ -36,6 +37,9 @@ export const StudyPlannerView: React.FC = () => {
 
   useEffect(() => {
     loadPlans();
+    const refresh=()=>{void api.getStudyPlans().then(r=>{setPlans(r.studyPlans);setActivePlan(current=>r.studyPlans.find((p:StudyPlan)=>p.id===current?.id)||r.studyPlans[0]||null);}).catch(()=>{});};
+    const timer=setInterval(refresh,60000);window.addEventListener('studysniper-progress-changed',refresh);
+    return()=>{clearInterval(timer);window.removeEventListener('studysniper-progress-changed',refresh);};
   }, []);
 
   async function loadPlans() {
@@ -232,6 +236,7 @@ export const StudyPlannerView: React.FC = () => {
                 </div>
               </div>
 
+              <PlanActions plan={activePlan} onUpdate={plan=>{setActivePlan(plan);setPlans(prev=>prev.map(p=>p.id===plan.id?plan:p));}} />
               {/* Progress Bar */}
               <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                 <div
@@ -262,7 +267,7 @@ export const StudyPlannerView: React.FC = () => {
                           <Square className="w-4 h-4 text-slate-500 shrink-0" />
                         )}
                         <div>
-                          <span className="font-bold text-emerald-300 mr-2">{task.day}:</span>
+                          <span className="font-bold text-emerald-300 mr-2">{task.unscheduled?'Unscheduled':task.day}:</span>
                           <span className="font-semibold text-slate-100 mr-2">[{task.subject}]</span>
                           <span>{task.topic}</span>
                         </div>

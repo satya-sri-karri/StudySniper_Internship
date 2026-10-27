@@ -16,6 +16,7 @@ export async function fetchApi<T = any>(endpoint: string, options: RequestInit =
   if(response.status===401 && !endpoint.startsWith('/api/auth/')) window.dispatchEvent(new Event('studysniper-session-expired'));
   throw new ApiError(data.error || 'Request failed. Please retry.',response.status,data);
  }
+ if(options.method&&options.method!=='GET')window.dispatchEvent(new Event('studysniper-progress-changed'));
  return data as T;
 }
 
@@ -71,7 +72,7 @@ export const api = {
 
   // Quiz
   getQuizzes: () => fetchApi('/api/quiz'),
-  generateQuiz: (data: { topic: string; subject?: string; difficulty: string; questionCount: number; types: string[]; documentId: string }) =>
+  generateQuiz: (data: { topic: string; subject?: string; difficulty: string; questionCount: number; types: string[]; documentId: string; pipelineId?:string; topicId?:string }) =>
     fetchApi('/api/quiz/generate', { method: 'POST', body: JSON.stringify(data) }),
   submitQuizScore: (id: string, answers: Record<string,string>) =>
     fetchApi(`/api/quiz/${id}/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),

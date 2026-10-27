@@ -1,3 +1,4 @@
+import {fetchApi} from '../../services/api';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -57,13 +58,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenSearch })
   // Notifications state
   const [notifications, setNotifications] = useState<{id:string;title:string;message:string;read:boolean}[]>([]);
 
-  const markAllNotificationsRead = () => {
-    setNotifications([]);
-  };
-
-  const dismissNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  const [notificationError,setNotificationError]=useState('');
+  useEffect(()=>{
+    let active=true;setNotifications([]);
+    const load=async()=>{if(!user)return;try{const r=await fetchApi('/api/progress/notifications');if(active){setNotifications(r.notifications);setNotificationError('');}}catch{if(active)setNotificationError('Could not refresh reminders.');}};
+    void load();const timer=setInterval(()=>void load(),60000);const refresh=()=>void load();window.addEventListener('studysniper-progress-changed',refresh);
+    return()=>{active=false;clearInterval(timer);window.removeEventListener('studysniper-progress-changed',refresh);};
+  },[user?.id]);
+  const markRead=async(ids:string[])=>{try{for(let i=0;i<ids.length;i+=200)await fetchApi('/api/progress/notifications/read',{method:'PUT',body:JSON.stringify({ids:ids.slice(i,i+200)})});setNotifications(prev=>prev.filter(n=>!ids.includes(n.id)));}catch{setNotificationError('Could not dismiss reminders. Please retry.');}};
+  const markAllNotificationsRead=()=>void markRead(notifications.map(n=>n.id));
+  const dismissNotification=(id:string)=>void markRead([id]);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -166,9 +170,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenSearch })
                 )}
               </div>
 
+              {notificationError&&<p role="alert" className="text-xs text-rose-300">{notificationError}</p>}
               {notifications.length === 0 ? (
                 <div className="text-xs text-slate-500 text-center py-6 italic">
-                  No reminders scheduled. Proactive reminders are planned for the next feature step.
+                  You’re caught up. New study and review reminders appear here while the app is open.
                 </div>
               ) : (
                 <div className="space-y-2 text-xs">

@@ -1,6 +1,6 @@
 # StudySniper AI — validated syllabus agents
 
-A React study workspace with tutor chat, document Q&A, quizzes, flashcards, notes, a study planner, and activity summaries. This release fixes the audited security and reliability problems. Step 3 adds a validated syllabus-to-plan pipeline and source-grounded practice with saved topic mastery. Adaptive replanning, scheduled reminders, spaced-repetition due queues and overall readiness scoring remain subsequent steps.
+A React study workspace with tutor chat, document Q&A, quizzes, flashcards, notes, a study planner, and activity summaries. This release fixes the audited security and reliability problems. Step 3 adds a validated syllabus-to-plan pipeline and source-grounded practice with saved topic mastery. Step 4 adds automatic replanning, fixed review queues, in-app reminders, calendar export and evidence-based readiness indicators.
 
 ## Actual stack
 
@@ -62,12 +62,12 @@ Set `TRUST_PROXY_HOPS` only to the actual number of trusted reverse proxies (def
 - Local and Google identities have separate recovery flows. Google users manage passwords with Google. Existing local users marked unverified must verify their email. Legacy Firebase rows migrate only when their stored UID matches a verified Firebase identity.
 - Account deletion requires the current local password or a fresh Google reauthentication, and removes the account's study records. Google deletion is performed before local data removal; if a local disk failure follows, retain the backup and resolve the failed local cleanup before continuing.
 - Quiz/flashcard generation requires an owned uploaded source. Keyword retrieval considers the whole extracted document; generated questions/cards must include matching source quotes. Document answers expose supporting excerpts or report insufficient evidence. Citation checks improve traceability but do not prove semantic correctness; review generated material before relying on it.
-- Model JSON gets at most two attempts and must satisfy runtime schemas. Plans must use real dates within the exam window and fit the daily hours. There is no adaptive rescheduling in this step.
+- Model JSON gets at most two attempts and must satisfy runtime schemas. Plans must use real dates within the exam window and fit the daily hours. Step 4 automatically reschedules missed work and adds reinforcement after low scores.
 - Quizzes are graded on the server. MCQ and text answers use normalized exact matching, not substring matching. The separate syllabus-agent practice flow uses source-grounded LLM grading; existing standalone quizzes retain exact matching. Attempt history is retained (latest 50 per quiz).
 - PDF/DOCX/PPTX and listed text formats are limited to 10 MB; PDFs/PPTX to 100 pages/slides; extracted text to 200,000 characters. Scanned PDFs need prior OCR. Legacy DOC/PPT are rejected rather than falsely “indexed.” Archive expansion is bounded. The PDF worker ships locally.
 - Document upload saves real extracted text even if an optional AI summary fails; the summary is clearly labeled as a source preview. Long-document summaries explicitly identify their first-20,000-character scope. Note-generation input is capped at 20,000 characters.
 - AI requests have per-user hourly limits, two concurrent requests per user, and bounded provider timeouts. Limits are local to this single server process and reset on restart.
-- Flashcards retain the existing review history; due-date spaced repetition is still pending. Dashboard hours are estimates, not measured readiness. The timer is not persisted. Static notifications were removed rather than presented as proactive reminders.
+- Revision Engine contains due topics and flashcards with fixed review intervals. Dashboard hours remain estimates; readiness is separately calculated from graded evidence. The timer is not persisted. In-app reminders reflect actual study/review work.
 
 See `STEP2_CHANGELOG.md` for audit coverage, validation evidence, and every changed file with its full workspace path. `STEP2_FULL_CHANGED_FILES.md` contains complete changed source files; the npm lockfile is supplied separately in full.
 
@@ -79,7 +79,7 @@ Open **Study Planner → Syllabus → plan → practice** after uploading a read
 1. Select the source, available hours, and optional exam-date override; click **Parse & analyze syllabus**.
 2. Review extracted units/topics and source evidence. Missing weightage stays unknown. Difficulty and importance are explicitly AI estimates. Set your priorities from 1 to 5.
 3. Click **Generate day-wise plan**. Every topic must be covered within its exam window and the total daily time budget. The result also appears in the existing timetable checklist.
-4. Click **Practice** on a topic, answer three questions, then **Grade answers & update mastery**. Feedback, evidence and assessment history persist across reloads. Mastery is the arithmetic mean of that topic's completed practice scores; it is not an exam prediction.
+4. Click **Practice** on a topic, answer three questions, then **Grade answers & update mastery**. Feedback, evidence and assessment history persist across reloads. Mastery is the mean of the latest five graded results for that topic; it is not an exam prediction.
 
 ```mermaid
 flowchart TD
@@ -99,9 +99,28 @@ Each agent uses its own prompt and runtime Zod schema, with at most two provider
 - Parsing supports up to 30,000 extracted characters and 60 topics; larger documents are explicitly rejected instead of silently truncated. PDF extraction uses the existing bounded parser.
 - Dates are accepted from the source only when explicitly ISO-formatted; provide an override for missing, past or differently formatted dates. The override applies to every unit. Weightage is extracted only when expressed as a percentage.
 - Topic headings support planning, but practice requires explanatory evidence in the selected document. Insufficient evidence fails visibly; upload syllabus plus notes together for substantive quizzes.
-- Agent-created assessments are separate from legacy standalone quizzes. Only the new practice flow updates pipeline topic mastery in this step. Auto-replanning and integration into the Analytics Dashboard remain Step 4.
+- Agent practice and mixed-topic mocks update topic mastery. In Quiz Generator, choose “Track mastery” to link a standalone quiz to the same pipeline/topic; existing unmapped quizzes remain usable without affecting readiness.
 - Agent routes use the same authenticated per-user rate and concurrency limits. Run-specific locking prevents duplicate concurrent stage writes; repeated completed stage/evaluation requests do not duplicate plans or mastery updates.
 - Old databases automatically initialize the new `pipelines` collection. Account deletion removes it with the user's other data. Deleting a pipeline explicitly keeps its separately saved timetable.
 - Limits: 20 saved pipelines and 100 assessments per pipeline. Source quotes improve traceability, but semantic evaluation remains an AI estimate requiring review.
 
-Tests use mocked provider responses and temporary databases. Live Gemini/SMTP/Firebase calls and browser/mobile visual checks have not been verified in this environment.
+Tests use mocked provider responses and temporary databases. Browser smoke checks passed for readiness, planner/calendar export, topic review and reminder dismissal at desktop width and a 390 px mobile viewport, with no page errors or mobile page overflow. Live Gemini/SMTP/Firebase credentials remain unverified.
+
+
+## Step 4: persistent feedback and revision
+
+**Feedback loop.** Topic practice, mixed-topic mocks and explicitly mapped quizzes update the topic's latest-five-result mastery average. Mock questions carry topic IDs, so each topic gets its own score. Repeated submission of the same assessment does not count twice. Standalone quiz requests may send an `attemptId`; legacy callers deduplicate identical answers to the same quiz within a UTC day, within the retained 50-attempt history. New questions provide stronger evidence than repeating known answers.
+
+**Adaptive timetable.** A deterministic scheduler adds up to 30 minutes of focused reinforcement when a topic scores below 70%, keeping at most one pending reinforcement task per topic. Missed days trigger automatic replanning at server startup, once per minute while running, and when relevant screens refresh. Pending work is ordered by deadline, lower mastery and higher user priority; completed work is preserved. Tasks can split across days. Time that cannot fit remains explicitly **Unscheduled**, never silently discarded. Daily capacity is per timetable, including that timetable's completed work on each date; separate timetables do not share a global budget. A lower new daily budget cannot undo work already completed. Use **Update & rebalance** to change hours or override all exam dates.
+
+**Revision Engine.** Both topics and cards use intervals of **1, 3, 7, 14 and 30 days**. Successful review advances one step; Again/Hard resets to 1 day. At the final step, the interval remains 30 days. Same-day successful grading cannot accelerate the interval. Early self-review submissions are rejected; upcoming cards can still be browsed. Topic self-review updates review timing only, not mastery. Graded scores of at least 70% count as successful review.
+
+**Readiness.** Dashboard shows each syllabus/exam and every topic, including topics not yet assessed. Topic readiness = mastery × (0.5 + 0.5 × min(attempts / 3, 1)), with a 15% reduction when its review is overdue. Unassessed topics contribute zero. Overall readiness is a weighted mean: explicit syllabus percentages are used when every topic has one and their sum is positive; otherwise estimated importance is used consistently. The UI shows the chosen weighting. This heuristic is transparent but is **not a validated prediction of exam marks**.
+
+**Grounding.** AI Tutor now requires an owned uploaded source and shows supporting excerpts. Document Q&A, question generation and mock exams likewise use retrieved source text, with runtime quote validation and refusal when evidence is insufficient. The tutor validates the complete answer before emitting it; a saved conversation provides history for the learner, while each question is independently retrieved against the selected source. Ask explicit questions rather than relying on ambiguous follow-ups. Keyword retrieval and evidence quotes do not prove semantic correctness.
+
+**Reminders and calendar.** The header bell shows persistent, owner-scoped reminders for today's tasks, due reviews, replanning and insufficient capacity. Dismissal persists; unresolved work gets a new reminder the next day. A single-process timer maintains reminders and plans each minute, and screens poll while open. This is in-app delivery, not email, browser push or an OS background notification. All stored schedule/review dates use **UTC**. Calendar export produces an RFC 5545 `.ics` snapshot of incomplete scheduled tasks as all-day events; import into Google Calendar or another calendar app. Re-export after changes; it is not live synchronization, and calendar clients may duplicate imports. Reference: https://www.rfc-editor.org/rfc/rfc5545
+
+**Quick verification.** Create a pipeline and plan; take Practice or a mixed-topic mock (up to 15 least-assessed topics per mock); submit a weak answer; inspect the updated timetable, readiness and next review date. For standalone Quiz Generator, choose a “Track mastery” topic before generating. Open Revision Engine, review a due item and confirm it leaves the due queue. Inspect the bell, dismiss a reminder, reload, and export the timetable.
+
+No new production dependencies were added for Step 4. Database migration adds the notifications collection and initializes revision/history metadata for existing pipelines. All changes and complete file contents are recorded in `STEP4_CHANGELOG.md` and `STEP4_FULL_CHANGED_FILES.md`. Earlier Step 2/3 change documents remain historical snapshots.

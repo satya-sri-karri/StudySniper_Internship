@@ -1,3 +1,4 @@
+import {LearningOverview} from './LearningOverview';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -81,6 +82,7 @@ export const DashboardOverview: React.FC = () => {
         </div>
       </div>
 
+      <LearningOverview />
       {/* Stats Widgets Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Streak */}

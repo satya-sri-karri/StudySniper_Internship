@@ -2,7 +2,7 @@ import { SourceSelect } from '../common/SourceSelect';
 import { LoadState } from '../common/LoadState';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../services/api';
+import { api,fetchApi } from '../../services/api';
 import { Quiz, QuizQuestion } from '../../types';
 import confetti from 'canvas-confetti';
 import {
@@ -24,6 +24,8 @@ export const QuizGeneratorView: React.FC = () => {
   const { showToast, updateUser } = useAuth();
 
   const [documentId,setDocumentId]=useState('');
+  const [link,setLink]=useState(''),[topicOptions,setTopicOptions]=useState<{key:string;name:string;documentId:string;label:string}[]>([]);
+  useEffect(()=>{void fetchApi('/api/progress').then(r=>setTopicOptions(r.exams.flatMap((p:any)=>p.topics.map((t:any)=>({key:p.id+'/'+t.id,name:t.name,documentId:p.documentId,label:p.title+' / '+t.name}))))).catch(()=>showToast('Could not load mastery topics. Standalone quizzes remain available.','error'));},[]);
   const [loadError,setLoadError]=useState('');
   const [initialLoading,setInitialLoading]=useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -78,7 +80,7 @@ export const QuizGeneratorView: React.FC = () => {
     try {
       const res = await api.generateQuiz({
         topic,
-        documentId,
+        documentId,...(link?{pipelineId:link.split('/')[0],topicId:link.split('/')[1]}:{}),
         subject: subject || topic,
         difficulty,
         questionCount,
@@ -172,13 +174,14 @@ export const QuizGeneratorView: React.FC = () => {
               <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Generate New Quiz
             </div>
 
-            <SourceSelect value={documentId} onChange={setDocumentId} />
+            <SourceSelect value={documentId} onChange={id=>{setDocumentId(id);setLink('');}} />
+            <label className="block text-xs">Track mastery (optional)<select className="block w-full rounded-xl p-2 bg-slate-800" value={link} onChange={e=>{setLink(e.target.value);const option=topicOptions.find(o=>o.key===e.target.value);if(option){setTopic(option.name);setDocumentId(option.documentId);}}}><option value="">Standalone quiz — no topic mapping</option>{topicOptions.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label>
           <div>
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Topic or Concept</label>
               <input
                 type="text"
                 value={topic}
-                onChange={e => setTopic(e.target.value)}
+                onChange={e => {setTopic(e.target.value);setLink('');}}
                 placeholder="e.g. Organic Chemistry Reactions, Big-O Notation"
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 focus:border-amber-500 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none"
               />

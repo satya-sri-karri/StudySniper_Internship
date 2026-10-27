@@ -27,9 +27,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const navItems: { id: TabType; label: string; icon: React.FC<{ className?: string }>; badge?: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'tutor', label: 'AI Tutor', icon: Bot, badge: 'Stream' },
+    { id: 'tutor', label: 'AI Tutor', icon: Bot, badge: 'Grounded' },
     { id: 'notes', label: 'My Notes', icon: FileText },
-    { id: 'flashcards', label: 'Flashcards', icon: Layers },
+    { id: 'flashcards', label: 'Revision Engine', icon: Layers },
     { id: 'quiz', label: 'Quiz Generator', icon: HelpCircle },
     { id: 'planner', label: 'Study Planner', icon: Calendar },
     { id: 'documents', label: 'Upload Documents', icon: UploadCloud },

@@ -1,3 +1,4 @@
+import {startProgressWorker} from './server/services/progress.ts';
 import path from 'path';
 import express from 'express';
 
@@ -41,6 +42,7 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
+  startProgressWorker();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Study Sniper AI server running on http://0.0.0.0:${PORT} (${isProduction ? 'production' : 'development'})`);
   });

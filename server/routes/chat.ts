@@ -2,7 +2,8 @@ import { Router, HttpError } from '../http.ts';
 import { Response } from 'express';
 import { db, Chat, Message } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { askGeminiStream, askGemini, TUTOR_SYSTEM_INSTRUCTION } from '../services/gemini.ts';
+import {groundedAnswer} from '../services/gemini.ts';
+import {ownedDocument,retrieve} from '../services/retrieval.ts';
 
 const router = Router();
 
@@ -37,7 +38,7 @@ router.post('/conversations', authenticateToken, (req: AuthRequest, res: Respons
     id: 'msg_' + Date.now() + '_1',
     chatId: newChat.id,
     role: 'model',
-    content: `Hello! I am **Sniper AI**, your dedicated personal tutor. 🎯\n\nHow can I help you master your studies today? You can ask me to explain a difficult concept, summarize your notes, solve a step-by-step problem, or prepare practice questions!`,
+    content: `Hello! I am **Sniper AI**, your dedicated personal tutor. 🎯\n\nHow can I help you master your studies today? Choose your uploaded syllabus or notes, then ask a specific question. I answer only from that source and show supporting excerpts.`,
     timestamp: new Date().toISOString()
   };
   db.get.messages.push(greetingMsg);
@@ -77,7 +78,7 @@ router.get('/conversations/:id/messages', authenticateToken, (req: AuthRequest, 
 // Send message & stream AI response via Server-Sent Events (SSE)
 router.post('/message', authenticateToken, async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  const { chatId, prompt, systemPrompt } = req.body;
+  const { chatId, prompt, documentId } = req.body;
 
   if (!chatId || !prompt) {
     return res.status(400).json({ error: 'chatId and prompt are required' });
@@ -85,6 +86,9 @@ router.post('/message', authenticateToken, async (req: AuthRequest, res: Respons
 
   const chat = db.get.chats.find(c => c.id === chatId && c.userId === userId);
   if (!chat) throw new HttpError(404, 'Conversation not found.');
+
+  if(!documentId)throw new HttpError(400,'Choose an uploaded source for grounded answers.');
+  const source=ownedDocument(userId,documentId);
 
   // Auto update title if first user message
   if (chat.title === 'New AI Tutor Session') {
@@ -108,34 +112,13 @@ router.post('/message', authenticateToken, async (req: AuthRequest, res: Respons
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  // Build history for Gemini
-  const pastMessages = db.get.messages
-    .filter(m => m.chatId === chatId && m.id !== userMsg.id)
-    .slice(-10)
-    .map(m => ({
-      role: m.role === 'model' ? ('model' as const) : ('user' as const),
-      parts: [{ text: m.content }]
-    }));
-
   const controller = new AbortController();
   res.once('close', () => controller.abort());
   let fullAiText = '';
-
-  const fullInstruction = systemPrompt
-    ? `${TUTOR_SYSTEM_INSTRUCTION}\n\n[Active Persona Mode: ${systemPrompt}]`
-    : TUTOR_SYSTEM_INSTRUCTION;
-
   try {
-    await askGeminiStream(
-      prompt,
-      pastMessages,
-      fullInstruction,
-      (chunkText) => {
-        fullAiText += chunkText;
-        res.write(`data: ${JSON.stringify({ chunk: chunkText })}\n\n`);
-      },
-      controller.signal
-    );
+    const answer=await groundedAnswer(prompt,retrieve(source.extractedText,prompt));
+    fullAiText=answer.answer+(answer.citations.length?'\n\n**Source: '+source.fileName+'**\n'+answer.citations.map(c=>'\n> '+c.quote.replace(/\n/g,' ')).join(''):'');
+    if(!controller.signal.aborted)res.write(`data: ${JSON.stringify({chunk:fullAiText})}\n\n`);
 
     if (controller.signal.aborted || !db.get.chats.some(c => c.id === chat.id && c.userId === userId)) return;
     // Save final AI Message

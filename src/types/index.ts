@@ -56,6 +56,8 @@ export interface Note {
 }
 
 export interface Flashcard {
+  nextReview?: string;
+  reviewStep?: number;
   id: string;
   userId: string;
   deckTitle: string;
@@ -92,6 +94,8 @@ export interface Quiz {
 }
 
 export interface StudyTask {
+  unscheduled?: boolean;
+  topicId?: string;
   id: string;
   day: string;
   subject: string;
@@ -101,6 +105,9 @@ export interface StudyTask {
 }
 
 export interface StudyPlan {
+  lastReplannedAt?: string;
+  replanReason?: string;
+  unscheduledMinutes?: number;
   id: string;
   userId: string;
   title: string;

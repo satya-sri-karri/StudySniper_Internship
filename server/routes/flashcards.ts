@@ -1,3 +1,5 @@
+import {cardDue,reviewCard,dayOf} from '../services/learning.ts';
+import {HttpError} from '../http.ts';
 import { Router } from '../http.ts';
 import { Response } from 'express';
 import { db, Flashcard, touchUserStreak } from '../db.ts';
@@ -14,7 +16,7 @@ router.get('/', authenticateToken, (req: AuthRequest, res: Response) => {
     .filter(f => f.userId === userId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  return res.json({ flashcards });
+  return res.json({ flashcards:flashcards.map(c=>({...c,nextReview:cardDue(c)})) });
 });
 
 // Generate Flashcards
@@ -95,21 +97,8 @@ router.put('/:id/review', authenticateToken, (req: AuthRequest, res: Response) =
     return res.status(404).json({ error: 'Flashcard not found' });
   }
 
-  card.lastReviewed = new Date().toISOString();
-  card.repetitions += 1;
-
-  if (rating === 'easy') {
-    card.interval = Math.round(card.interval * 2.5);
-    card.easeFactor += 0.15;
-  } else if (rating === 'good') {
-    card.interval = Math.round(card.interval * 1.8);
-  } else if (rating === 'hard') {
-    card.interval = Math.max(1, Math.round(card.interval * 1.2));
-    card.easeFactor = Math.max(1.3, card.easeFactor - 0.15);
-  } else {
-    card.interval = 1;
-    card.easeFactor = Math.max(1.3, card.easeFactor - 0.2);
-  }
+  if(cardDue(card)>dayOf())throw new HttpError(409,'This card is not due yet. Browse it without changing the review schedule.');
+  reviewCard(card,rating);
 
   db.save();
   const updatedUser = touchUserStreak(userId);

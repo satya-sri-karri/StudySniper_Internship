@@ -1,3 +1,5 @@
+import {recordResult,rebalance} from '../services/learning.ts';
+import {maintainUser} from '../services/progress.ts';
 import {randomUUID} from 'node:crypto';
 import type {RequestHandler} from 'express';
 import {Router,HttpError} from '../http.ts';
@@ -5,10 +7,11 @@ import {authenticateToken,type AuthRequest} from '../middleware/auth.ts';
 import {db} from '../db.ts';
 import {ownedDocument} from '../services/retrieval.ts';
 import {startSchema,preferencesSchema,quizInput,answersSchema,type Pipeline,type PublicPipeline} from '../agents/schemas.ts';
-import {parseSyllabus,extractTopics,analyzeTopics,planTopics,coachTopic,evaluateAnswers} from '../agents/pipeline.ts';
+import {parseSyllabus,extractTopics,analyzeTopics,planTopics,coachTopic,evaluateAnswers,mockExam} from '../agents/pipeline.ts';
 import type {z} from 'zod';
 const router=Router();
 router.use(authenticateToken);
+router.use((req:AuthRequest,_res,next)=>{try{maintainUser(req.user!.userId);next();}catch(e){next(e);}});
 const validate=(schema:z.ZodType):RequestHandler=>(req,res,next)=>{
  const parsed=schema.safeParse(req.body);
  if(!parsed.success)return void res.status(400).json({error:parsed.error.issues.map(i=>i.message).join('; ')});
@@ -20,7 +23,7 @@ const owned=(req:AuthRequest)=>{
  return run;
 };
 export function publicRun(run:Pipeline):PublicPipeline {
- return {...run,assessments:run.assessments.map(a=>({...a,questions:a.questions.map(q=>a.completedAt?q:{id:q.id,question:q.question})}))};
+ return {...run,assessments:run.assessments.map(a=>({...a,questions:a.questions.map(q=>a.completedAt?q:{id:q.id,topicId:q.topicId,question:q.question})}))};
 }
 const busy=new Set<string>();
 async function exclusive<T>(key:string,work:()=>Promise<T>) {
@@ -56,7 +59,7 @@ router.post('/:id/plan',validate(preferencesSchema),async(req:AuthRequest,res)=>
   ownedDocument(run.userId,run.documentId);
   const output=await planTopics(run,priorities);
   run=owned(req);
-  const plan={id:randomUUID(),userId:run.userId,title:run.title,subjects:[...new Set(run.topics.map(t=>t.unit))],examDate:run.topics.map(t=>t.examDate).sort().at(-1)!,dailyHours:run.dailyHours,tasks:output.tasks.map(t=>{const topic=run.topics.find(s=>s.id===t.topicId)!;return {id:randomUUID(),day:t.day,subject:topic.unit,topic:topic.name,durationMinutes:t.durationMinutes,completed:false};}),createdAt:new Date().toISOString()};
+  const plan={id:randomUUID(),userId:run.userId,title:run.title,subjects:[...new Set(run.topics.map(t=>t.unit))],examDate:run.topics.map(t=>t.examDate).sort().at(-1)!,dailyHours:run.dailyHours,tasks:output.tasks.map(t=>{const topic=run.topics.find(s=>s.id===t.topicId)!;return {id:randomUUID(),topicId:topic.id,day:t.day,subject:topic.unit,topic:topic.name,durationMinutes:t.durationMinutes,completed:false};}),createdAt:new Date().toISOString()};
   run.planId=plan.id;run.priorities=priorities;db.get.studyPlans.push(plan);db.save();return {run,plan};
  });res.json({pipeline:publicRun(result.run),studyPlan:result.plan});
 });
@@ -74,6 +77,18 @@ router.post('/:id/quiz',validate(quizInput),async(req:AuthRequest,res)=>{
   db.save();return run;
  });res.json({pipeline:publicRun(run)});
 });
+router.post('/:id/mock',async(req:AuthRequest,res)=>{
+ const run=await exclusive(owned(req).id,async()=>{
+  let run=owned(req);
+  if(!run.planId)throw new HttpError(409,'Generate a plan before starting a mock.');
+  if(run.assessments.some(a=>a.kind==='mock'&&!a.completedAt))return run;
+  if(run.assessments.length>=100)throw new HttpError(400,'Assessment limit reached.');
+  const topics=[...run.topics].sort((a,b)=>(run.mastery[a.id]?.attempts||0)-(run.mastery[b.id]?.attempts||0)).slice(0,15);
+  const result=await mockExam(ownedDocument(run.userId,run.documentId).extractedText,topics);
+  run=owned(req);ownedDocument(run.userId,run.documentId);
+  run.assessments.push({id:randomUUID(),kind:'mock',topicId:'mock',questions:result.questions.map(q=>({...q,id:randomUUID()}))});db.save();return run;
+ });res.json({pipeline:publicRun(run)});
+});
 router.post('/:id/assessments/:assessmentId/evaluate',validate(answersSchema),async(req:AuthRequest,res)=>{
  const run=await exclusive(owned(req).id,async()=>{
   let run=owned(req);const assessment=run.assessments.find(a=>a.id===req.params.assessmentId);
@@ -86,9 +101,14 @@ router.post('/:id/assessments/:assessmentId/evaluate',validate(answersSchema),as
   run=owned(req);const saved=run.assessments.find(a=>a.id===assessment.id)!;
   const completedAt=new Date().toISOString(),score=Math.round(100*output.grades.reduce((s,g)=>s+g.score,0)/assessment.questions.length);
   Object.assign(saved,{grades:output.grades,answers,score,completedAt});
-  // Equal weight per completed assessment, calculated before rounding to avoid cumulative drift.
-  const attempts=run.assessments.filter(a=>a.topicId===assessment.topicId&&a.completedAt);
-  run.mastery[assessment.topicId]={score:Math.round(attempts.reduce((s,a)=>s+a.score!,0)/attempts.length),attempts:attempts.length,updatedAt:completedAt};
+  for(const topicId of new Set(saved.questions.map(q=>q.topicId||saved.topicId))) {
+   const grades=output.grades.filter(g=>saved.questions.some(q=>q.id===g.questionId&&(q.topicId||saved.topicId)===topicId));
+   const topicScore=Math.round(100*grades.reduce((s,g)=>s+g.score,0)/grades.length);
+   if(recordResult(run,topicId,topicScore,'assessment:'+saved.id,saved.kind||'practice')) {
+    const plan=db.get.studyPlans.find(p=>p.id===run.planId&&p.userId===run.userId);
+    if(plan&&topicScore<70)rebalance(plan,run,'Low practice score',new Date(),topicId);
+   }
+  }
   db.save();return run;
  });res.json({pipeline:publicRun(run)});
 });
