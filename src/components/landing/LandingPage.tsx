@@ -39,7 +39,7 @@ export const LandingPage: React.FC = () => {
       icon: Bot,
       color: 'from-indigo-500 via-purple-500 to-pink-500',
       title: '24/7 AI Master Tutor',
-      desc: 'Real-time streaming academic conversations powered by Gemini 2.5 Flash. Asks adaptive follow-up recall questions for active conceptual mastery.'
+      desc: 'Ask questions grounded in your uploaded syllabus and notes, with supporting excerpts and saved conversation history.'
     },
     {
       icon: UploadCloud,
@@ -57,7 +57,7 @@ export const LandingPage: React.FC = () => {
       icon: Layers,
       color: 'from-purple-500 via-pink-500 to-rose-500',
       title: 'Spaced-Repetition Flashcards',
-      desc: 'Interactive flashcards with saved review history and interval ratings. Due-date revision scheduling is planned.'
+      desc: 'Review topics and cards when due, using fixed 1, 3, 7, 14 and 30-day intervals and saved learning progress.'
     },
     {
       icon: Calendar,

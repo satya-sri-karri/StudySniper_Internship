@@ -94,7 +94,7 @@ flowchart TD
   E --> M[Saved topic mastery]
 ```
 
-Each agent uses its own prompt and runtime Zod schema, with at most two provider attempts for invalid JSON, wrong IDs or unsupported evidence. These are specialized stages using the same configured Gemini model; no extra agent framework or dependency is installed. Each stage is a separate bounded request, so completed stages survive a later failure. There is no under-one-minute guarantee: provider latency and retries determine completion time.
+Each agent uses its own prompt and runtime Zod schema, with at most two provider attempts for invalid JSON, wrong IDs or unsupported evidence. These are specialized stages using the same configured Gemini model; no extra agent framework or dependency is installed. The advanced flow uses separate requests; the quick flow chains stages in one bounded request. Completed stages survive a later failure. There is no under-one-minute guarantee: provider latency and retries determine completion time.
 
 - Parsing supports up to 30,000 extracted characters and 60 topics; larger documents are explicitly rejected instead of silently truncated. PDF extraction uses the existing bounded parser.
 - Dates are accepted from the source only when explicitly ISO-formatted; provide an override for missing, past or differently formatted dates. The override applies to every unit. Weightage is extracted only when expressed as a percentage.
@@ -124,3 +124,18 @@ Tests use mocked provider responses and temporary databases. Browser smoke check
 **Quick verification.** Create a pipeline and plan; take Practice or a mixed-topic mock (up to 15 least-assessed topics per mock); submit a weak answer; inspect the updated timetable, readiness and next review date. For standalone Quiz Generator, choose a “Track mastery” topic before generating. Open Revision Engine, review a due item and confirm it leaves the due queue. Inspect the bell, dismiss a reminder, reload, and export the timetable.
 
 No new production dependencies were added for Step 4. Database migration adds the notifications collection and initializes revision/history metadata for existing pipelines. All changes and complete file contents are recorded in `STEP4_CHANGELOG.md` and `STEP4_FULL_CHANGED_FILES.md`. Earlier Step 2/3 change documents remain historical snapshots.
+
+
+## Step 5: quick start and instant demo
+
+In **Study Planner**, choose a readable syllabus, exam date and daily hours, then click **Upload & create my plan**. The file is saved without a redundant AI summary; parser, analyzer and planner run automatically and open the saved timetable. PDF, DOCX, PPTX, TXT and Markdown are supported (10 MB file limit; 30,000 extracted characters for planning). Scanned PDFs need OCR outside this app.
+
+The target is under one minute, with a 55-second client deadline and at most 50 seconds for server AI work. Provider latency, retries, document complexity and network speed can prevent completion. Saved parser/analyzer progress can be resumed under **Saved plans & topic practice**; an uploaded source remains available under Advanced. This is a time budget, not a verified live-provider speed guarantee.
+
+For an instant local demo, set `ENABLE_DEMO=true` in `.env`, run `npm run dev`, and choose the landing page demo button. Each click creates an isolated synthetic workspace. No AI or email credentials are required to explore the saved plan, take the saved TCP quiz, update readiness, review due cards, view reminders or export the calendar. New AI generation still requires `GEMINI_API_KEY`. Demo mode is disabled in production.
+
+Alternatively, with the application stopped, run `npm run seed:demo`. It prints a unique email and randomly generated password for local sign-in. Restart the app against the same `DATA_DIR`; do not run the seed concurrently with the single-process JSON database server. Never commit the generated database or credentials.
+
+The seed includes six weighted networking topics, a 14-day deadline, three historical mock results, two unassessed topics, a missed study task, completed tasks, six revision cards, source notes and a mapped TCP recovery quiz. The amber demo banner identifies synthetic history and provides four navigation shortcuts. Answer **TCP**, **acknowledgements**, and **Retransmissions** in the saved quiz to see real server-graded feedback update the demo's topic mastery.
+
+Step 5 adds no dependencies. Full paths, explanations and complete changed contents are in `STEP5_CHANGELOG.md` and `STEP5_FULL_CHANGED_FILES.md`.

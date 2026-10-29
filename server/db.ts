@@ -8,6 +8,7 @@ const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 export interface User {
+  isDemo?: boolean;
   id: string;
   name: string;
   email: string;
@@ -240,7 +241,7 @@ export class JSONDatabase {
 }
 
 export function safeUser(user: User) {
-  return {id:user.id,name:user.name,email:user.email,avatar:user.avatar,targetExam:user.targetExam,dailyGoalHours:user.dailyGoalHours,streakDays:user.streakDays,lastActiveDate:user.lastActiveDate,createdAt:user.createdAt,isVerified:user.isVerified,authProvider:user.authProvider || 'local'};
+  return {id:user.id,isDemo:user.isDemo===true,name:user.name,email:user.email,avatar:user.avatar,targetExam:user.targetExam,dailyGoalHours:user.dailyGoalHours,streakDays:user.streakDays,lastActiveDate:user.lastActiveDate,createdAt:user.createdAt,isVerified:user.isVerified,authProvider:user.authProvider || 'local'};
 }
 
 export const db = new JSONDatabase();

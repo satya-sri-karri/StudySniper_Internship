@@ -8,7 +8,7 @@ import {db} from '../db.ts';
 import {ownedDocument} from '../services/retrieval.ts';
 import {startSchema,preferencesSchema,quizInput,answersSchema,type Pipeline,type PublicPipeline} from '../agents/schemas.ts';
 import {parseSyllabus,extractTopics,analyzeTopics,planTopics,coachTopic,evaluateAnswers,mockExam} from '../agents/pipeline.ts';
-import type {z} from 'zod';
+import {z} from 'zod';
 const router=Router();
 router.use(authenticateToken);
 router.use((req:AuthRequest,_res,next)=>{try{maintainUser(req.user!.userId);next();}catch(e){next(e);}});
@@ -30,7 +30,44 @@ async function exclusive<T>(key:string,work:()=>Promise<T>) {
  if(busy.has(key))throw new HttpError(409,'This agent is already running. Please wait.');
  busy.add(key);try{return await work();}finally{busy.delete(key);}
 }
+function savePlan(run:Pipeline,output:{tasks:{topicId:string;day:string;durationMinutes:number}[]},priorities:Record<string,number>={}) {
+  const plan={id:randomUUID(),userId:run.userId,title:run.title,subjects:[...new Set(run.topics.map(t=>t.unit))],examDate:run.topics.map(t=>t.examDate).sort().at(-1)!,dailyHours:run.dailyHours,tasks:output.tasks.map(t=>{const topic=run.topics.find(s=>s.id===t.topicId)!;return {id:randomUUID(),topicId:topic.id,day:t.day,subject:topic.unit,topic:topic.name,durationMinutes:t.durationMinutes,completed:false};}),createdAt:new Date().toISOString()};
+ run.planId=plan.id;run.priorities=priorities;db.get.studyPlans.push(plan);db.save();return plan;
+}
 router.get('/',(req:AuthRequest,res)=>res.json({pipelines:db.get.pipelines.filter(p=>p.userId===req.user!.userId).map(publicRun).reverse()}));
+router.post('/quick-plan',validate(startSchema.extend({budgetMs:z.number().int().min(1000).max(50000).default(50000)})),async(req:AuthRequest,res)=>{
+ const started=Date.now(),controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),req.body.budgetMs);timer.unref();
+ res.once('close',()=>controller.abort());
+ let savedId:string|undefined;
+ try {
+  const result=await exclusive(req.user!.userId+':parse',async()=>{
+   if(db.get.pipelines.filter(p=>p.userId===req.user!.userId).length>=20)throw new HttpError(400,'Pipeline limit reached. Delete an old pipeline first.');
+   const {documentId,dailyHours,examDate}=req.body;
+   const doc=ownedDocument(req.user!.userId,documentId);
+   const parsed=await parseSyllabus(doc.extractedText,controller.signal);
+   ownedDocument(req.user!.userId,documentId);
+   let run:Pipeline={id:randomUUID(),userId:req.user!.userId,documentId,title:parsed.title,dailyHours,createdAt:new Date().toISOString(),parser:parsed,topics:extractTopics(parsed,examDate),assessments:[],mastery:{}};
+   savedId=run.id;db.get.pipelines.push(run);db.save();
+   return exclusive(run.id,async()=>{
+    const analysis=await analyzeTopics(run.topics,controller.signal);
+    run=db.get.pipelines.find(p=>p.id===savedId&&p.userId===req.user!.userId)!;
+    if(!run)throw new HttpError(404,'Pipeline no longer exists.');
+    ownedDocument(run.userId,run.documentId);run.analysis=analysis;db.save();
+    const output=await planTopics(run,{},controller.signal);
+    run=db.get.pipelines.find(p=>p.id===savedId&&p.userId===req.user!.userId)!;
+    if(!run)throw new HttpError(404,'Pipeline no longer exists.');
+    ownedDocument(run.userId,run.documentId);
+    return {pipeline:publicRun(run),studyPlan:savePlan(run,output)};
+   });
+  });
+  // Read the saved run after assigning its plan ID.
+  res.status(201).json({...result,pipeline:publicRun(db.get.pipelines.find(p=>p.id===savedId)!),elapsedMs:Date.now()-started});
+ }catch(error){
+  const status=controller.signal.aborted?504:error instanceof HttpError?error.status:500;
+  res.status(status).json({error:controller.signal.aborted?'The quick-plan time limit was reached. Open saved progress to resume the remaining stage.':error instanceof HttpError?error.message:'Could not create the plan. Please retry.',pipelineId:savedId});
+ }finally{clearTimeout(timer);}
+});
 router.post('/parse',validate(startSchema),async(req:AuthRequest,res)=>{
  const run=await exclusive(req.user!.userId+':parse',async()=>{
   if(db.get.pipelines.filter(p=>p.userId===req.user!.userId).length>=20)throw new HttpError(400,'Limit of 20 syllabus pipelines reached. Delete an old pipeline first.');
@@ -59,8 +96,7 @@ router.post('/:id/plan',validate(preferencesSchema),async(req:AuthRequest,res)=>
   ownedDocument(run.userId,run.documentId);
   const output=await planTopics(run,priorities);
   run=owned(req);
-  const plan={id:randomUUID(),userId:run.userId,title:run.title,subjects:[...new Set(run.topics.map(t=>t.unit))],examDate:run.topics.map(t=>t.examDate).sort().at(-1)!,dailyHours:run.dailyHours,tasks:output.tasks.map(t=>{const topic=run.topics.find(s=>s.id===t.topicId)!;return {id:randomUUID(),topicId:topic.id,day:t.day,subject:topic.unit,topic:topic.name,durationMinutes:t.durationMinutes,completed:false};}),createdAt:new Date().toISOString()};
-  run.planId=plan.id;run.priorities=priorities;db.get.studyPlans.push(plan);db.save();return {run,plan};
+  const plan=savePlan(run,output,priorities);return {run,plan};
  });res.json({pipeline:publicRun(result.run),studyPlan:result.plan});
 });
 router.post('/:id/quiz',validate(quizInput),async(req:AuthRequest,res)=>{

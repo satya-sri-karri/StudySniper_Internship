@@ -26,7 +26,7 @@ const shapes: [string, RegExp, z.ZodType][] = [
  ['POST',/^\/chat\/conversations$/,z.object({title:text().optional()})],
  ['POST',/^\/chat\/message$/,z.object({chatId:text(),prompt:text(12000),systemPrompt:text(500).optional(),documentId:text().optional()})],
  ['POST',/^\/chat\/bookmark$/,z.object({messageId:text()})],
- ['POST',/^\/documents\/upload$/,z.object({fileName:text(255),fileType:z.enum(['PDF','DOCX','PPTX','TXT','MD','CSV','JSON','JS','TS','PY','JAVA','C','CPP','HTML','CSS','LOG','SRT','RST','XML','YAML','YML']),fileSize:z.number().int().min(1).max(10*1024*1024),textContent:sourceText})],
+ ['POST',/^\/documents\/upload$/,z.object({fileName:text(255),fileType:z.enum(['PDF','DOCX','PPTX','TXT','MD','CSV','JSON','JS','TS','PY','JAVA','C','CPP','HTML','CSS','LOG','SRT','RST','XML','YAML','YML']),fileSize:z.number().int().min(1).max(10*1024*1024),textContent:sourceText,summarize:z.boolean().optional()})],
  ['POST',/^\/documents\/[^/]+\/ask$/,z.object({question:text(2000)})],
  ['POST',/^\/documents\/[^/]+\/explain-section$/,z.object({selectedText:text(12000)})],
  ['POST',/^\/quiz\/generate$/,z.object({topic:text(),subject:text().optional(),difficulty,questionCount:z.number().int().min(1).max(15),types:z.array(questionType).min(1).max(4),documentId:text(),pipelineId:text().optional(),topicId:text().optional()}).refine(v=>!!v.pipelineId===!!v.topicId,'Select both pipeline and topic')],

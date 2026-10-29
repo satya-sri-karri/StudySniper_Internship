@@ -28,9 +28,9 @@ router.post('/upload', authenticateToken, async (req: AuthRequest, res: Response
 
   if (db.get.documents.filter(d => d.userId === userId).length >= 50) throw new HttpError(409,'Document limit reached (50). Delete unused documents first.');
   // Upload succeeds only after real extraction; use a clearly labeled source preview.
-  let summary = 'Source preview (AI summary not configured): ' + textContent.slice(0,500);
+  let summary = 'Source preview: ' + textContent.slice(0,500);
   let warning: string | undefined;
-  if(process.env.GEMINI_API_KEY) {
+  if(process.env.GEMINI_API_KEY && req.body.summarize!==false) {
     try {const result=await generateNoteSummaryJSON({topic:fileName,content:textContent.slice(0,20000)});summary=(textContent.length>20000?'Summary of first 20,000 characters: ':'')+result.summary;}
     catch {warning='Document saved, but AI summary failed. The source text is available for retry.';summary='AI summary unavailable. Source preview: '+textContent.slice(0,500);}
   }

@@ -72,3 +72,15 @@ test('pipeline deletion is owner-scoped and preserves the generated timetable',a
  assert.equal((await request(`/${runId}`,'DELETE',undefined,b)).status,404);
  assert.equal((await request(`/${runId}`,'DELETE')).status,200);assert.equal(db.get.pipelines.length,0);assert.equal(db.get.studyPlans.length,1);
 });
+test('quick plan validates ownership and creates a linked plan in one request',async()=>{
+ mock(parsed,{topics:[{topicId:'u1t1',difficulty:2,importance:4,reason:'Core protocol'}]},{tasks:[{topicId:'u1t1',day:today,durationMinutes:60}]});
+ assert.equal((await request('/quick-plan','POST',{documentId:'source',dailyHours:2,examDate:future},b)).status,404);assert.equal(calls,0);
+ assert.equal((await request('/quick-plan','POST',{documentId:'source',dailyHours:2,budgetMs:60000})).status,400);
+ const r=await request('/quick-plan','POST',{documentId:'source',dailyHours:2,examDate:future});
+ assert.equal(r.status,201);assert.equal(calls,3);assert.equal(r.data.pipeline.planId,r.data.studyPlan.id);assert.ok(r.data.elapsedMs<55000);assert.equal(r.data.studyPlan.tasks[0].topicId,'u1t1');
+});
+test('quick plan deadline preserves parsed progress without saving late output',async()=>{
+ calls=0;globalThis.fetch=async()=>{calls++;if(calls===2)await new Promise(r=>setTimeout(r,1100));return new Response(JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify(calls===1?parsed:{topics:[{topicId:'u1t1',difficulty:2,importance:4,reason:'Core protocol'}]})}]}}]}),{headers:{'Content-Type':'application/json'}});};
+ const r=await request('/quick-plan','POST',{documentId:'source',dailyHours:2,examDate:future,budgetMs:1000});assert.equal(r.status,504);assert.ok(r.data.pipelineId);
+ const saved=db.get.pipelines.find(p=>p.id===r.data.pipelineId)!;assert.equal(saved.analysis,undefined);assert.equal(saved.planId,undefined);assert.equal(calls,2);
+});

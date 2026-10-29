@@ -119,6 +119,12 @@ test('isolated demo works without SMTP or AI and returns real fixture data',asyn
  const result=await request('/api/auth/demo','POST',{});assert.equal(result.status,200);
  const docs=await request('/api/documents','GET',undefined,result.data.token);assert.equal(docs.data.documents.length,1);
  const quiz=await request('/api/quiz','GET',undefined,result.data.token);assert.equal(quiz.data.quizzes.length,1);
+ assert.equal(result.data.user.isDemo,true);
+ const run=db.get.pipelines.find(p=>p.userId===result.data.user.id)!;assert.equal(run.topics.length,6);assert.equal(run.assessments.length,3);assert.equal(Object.keys(run.mastery).length,4);
+ const q=db.get.quizzes.find(q=>q.userId===result.data.user.id)!;const oldScore=run.mastery.tcp.score;
+ const graded=await request('/api/quiz/'+q.id+'/submit','POST',{answers:Object.fromEntries(q.questions.map(q=>[q.id,q.correctAnswer]))},result.data.token);
+ assert.equal(graded.status,200);assert.equal(graded.data.quiz.score,100);assert.ok(run.mastery.tcp.score>oldScore);
+
 });
 test('storage rolls back on write failure and refuses a second writer',async()=>{
  const snapshot=JSON.stringify(db.get);
@@ -175,4 +181,11 @@ test('concurrent AI work is limited to two requests per user',async()=>{
   pending.forEach(resolve=>resolve(new Response(JSON.stringify({candidates:[{content:{parts:[{text}]}}]}),{status:200,headers:{'Content-Type':'application/json'}})));
   assert.equal((await one).status,200);assert.equal((await two).status,200);
  }finally{globalThis.fetch=nativeFetch;process.env.GEMINI_API_KEY='';}
+});
+
+test('quick upload skips AI summary even with a configured key',async()=>{
+ const a=await account('quick-upload@example.com');process.env.GEMINI_API_KEY='test-only';let calls=0;
+ globalThis.fetch=async()=>{calls++;throw new Error('Provider must not run');};
+ try{const r=await request('/api/documents/upload','POST',{fileName:'quick.txt',fileType:'TXT',fileSize:45,textContent:'TCP provides reliable ordered delivery.',summarize:false},a.token);assert.equal(r.status,200);assert.equal(calls,0);assert.match(r.data.document.summary,/Source preview/);}
+ finally{globalThis.fetch=nativeFetch;process.env.GEMINI_API_KEY='';}
 });

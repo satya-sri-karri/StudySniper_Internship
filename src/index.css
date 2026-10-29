@@ -93,3 +93,11 @@
   opacity: 0.9;
   font-style: italic;
 }
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

@@ -30,13 +30,15 @@ export async function askGeminiStream(prompt:string,history:any[]=[],systemInstr
   if(!length) throw new HttpError(502,'AI returned an empty response.');
  } catch(error) { if(signal?.aborted) return; providerError(error); }
 }
-export async function generateValidated<T>(prompt:string,schema:z.ZodType<T>):Promise<T> {
+export async function generateValidated<T>(prompt:string,schema:z.ZodType<T>,signal?:AbortSignal):Promise<T> {
  const ai=client();
  let feedback='';
  for(let attempt=0;attempt<2;attempt++) {
+  if(signal?.aborted)throw new HttpError(504,'Planning time limit reached. Saved stages can be resumed.');
   let raw:string;
   try {
-   const response=await ai.models.generateContent({model:config.aiModel,contents:prompt+feedback,config:{systemInstruction:TUTOR_SYSTEM_INSTRUCTION+' Return only JSON matching the requested shape.',responseMimeType:'application/json',temperature:0.1,maxOutputTokens:8192}});
+   const response=await ai.models.generateContent({model:config.aiModel,contents:prompt+feedback,config:{systemInstruction:TUTOR_SYSTEM_INSTRUCTION+' Return only JSON matching the requested shape.',responseMimeType:'application/json',temperature:0.1,maxOutputTokens:8192,abortSignal:signal}});
+   if(signal?.aborted)throw new HttpError(504,'Planning time limit reached. Saved stages can be resumed.');
    raw=response.text || '';
   } catch(error) { return providerError(error); }
   try { return schema.parse(JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''))); }

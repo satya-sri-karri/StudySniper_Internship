@@ -1,3 +1,4 @@
+import {DemoGuide} from './components/dashboard/DemoGuide';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import React, { useState, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -61,6 +62,7 @@ const MainLayout: React.FC = () => {
 
         {/* Dashboard Content Container */}
         <main className="min-w-0 flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">
+          <div className="mb-4"><DemoGuide /></div>
           <Suspense fallback={<p role="status">Loading study tool…</p>}>
           {activeTab === 'dashboard' && <DashboardOverview />}
           {activeTab === 'tutor' && <AiTutorView />}

@@ -67,10 +67,10 @@ export const DashboardOverview: React.FC = () => {
 
           <div className="flex flex-wrap gap-2.5 shrink-0">
             <button
-              onClick={() => setActiveTab('tutor')}
+              onClick={() => setActiveTab('planner')}
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 flex items-center gap-2 transition"
             >
-              <Bot className="w-4 h-4" /> Start AI Chat
+              <Bot className="w-4 h-4" /> Create my study plan
             </button>
             <button
               onClick={() => setActiveTab('quiz')}
