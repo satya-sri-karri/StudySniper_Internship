@@ -171,13 +171,10 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fade-in overflow-y-auto">
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-700/60 rounded-3xl shadow-2xl p-6 sm:p-8 relative overflow-hidden my-8">
-        {/* Ambient Glassmorphic Background Glow */}
-        <div className="absolute -top-20 -right-20 w-44 h-44 bg-purple-600/25 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-44 h-44 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none" />
-
+      <div className="w-full max-w-md bg-slate-900/90 border border-slate-700/60 rounded-xl shadow-lg p-6 sm:p-8 relative overflow-hidden my-8">
         {/* Close button */}
         <button
+          aria-label="Close sign in"
           onClick={() => setAuthModalOpen(false)}
           className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 transition"
         >
@@ -186,17 +183,14 @@ export const AuthModal: React.FC = () => {
 
         {/* Header Brand */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+          <div className="w-10 h-10 rounded-lg bg-teal-700 flex items-center justify-center text-white shadow-lg ">
             <Target className="w-5 h-5" />
           </div>
           <div>
             <div className="font-bold text-base text-white flex items-center gap-1.5">
-              Study Sniper AI
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Enterprise
-              </span>
+              StudySniper.
             </div>
-            <div className="text-xs text-slate-400">Secure Active Learning SaaS</div>
+            <div className="text-xs text-slate-400">Your study workspace</div>
           </div>
         </div>
 
@@ -208,7 +202,7 @@ export const AuthModal: React.FC = () => {
               hidden={!firebaseEnabled}
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full mb-4 py-2.5 px-4 bg-slate-800 hover:bg-slate-750 border border-slate-700/80 rounded-xl text-slate-100 font-semibold text-xs flex items-center justify-center gap-2.5 transition shadow-sm cursor-pointer hover:border-purple-500/50"
+              className="w-full mb-4 py-2.5 px-4 bg-slate-800 hover:bg-slate-750 border border-slate-700/80 rounded-xl text-slate-100 font-semibold text-xs flex items-center justify-center gap-2.5 transition shadow-sm cursor-pointer hover:border-teal-500/50"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -236,7 +230,7 @@ export const AuthModal: React.FC = () => {
               <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-slate-900 px-2 text-slate-500 font-semibold">Or email & password</span></div>
             </div>
 
-            <div className="flex p-1 bg-slate-950/60 rounded-2xl mb-6 border border-slate-800">
+            <div className="flex p-1 bg-slate-950/60 rounded-lg mb-6 border border-slate-800">
               <button
                 onClick={() => {
                   setAuthModalMode('login');
@@ -245,7 +239,7 @@ export const AuthModal: React.FC = () => {
                 }}
                 className={`flex-1 py-2 text-xs font-semibold rounded-xl transition ${
                   authModalMode === 'login'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                    ? 'bg-teal-700 text-white shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -259,7 +253,7 @@ export const AuthModal: React.FC = () => {
                 }}
                 className={`flex-1 py-2 text-xs font-semibold rounded-xl transition ${
                   authModalMode === 'signup'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                    ? 'bg-teal-700 text-white shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -272,13 +266,13 @@ export const AuthModal: React.FC = () => {
         {/* Mode Title Headers */}
         {authModalMode === 'verify_otp' && (
           <div className="mb-5 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-slate-100">Verify Your Email</h3>
             <p className="text-xs text-slate-400 mt-1">
               We dispatched a 6-digit verification code to{' '}
-              <strong className="text-purple-300">{currentEmail}</strong>
+              <strong className="text-teal-300">{currentEmail}</strong>
             </p>
           </div>
         )}
@@ -296,7 +290,7 @@ export const AuthModal: React.FC = () => {
           <div className="mb-5 text-center">
             <h3 className="text-lg font-bold text-slate-100">Set New Password</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Enter the 6-digit OTP code sent to <strong className="text-purple-300">{currentEmail}</strong> and your new password.
+              Enter the 6-digit OTP code sent to <strong className="text-teal-300">{currentEmail}</strong> and your new password.
             </p>
           </div>
         )}
@@ -316,12 +310,12 @@ export const AuthModal: React.FC = () => {
 
         {/* OTP Mail Status Banner */}
         {(authModalMode === 'verify_otp' || authModalMode === 'reset_password') && (
-          <div className="mb-4 p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-200 text-xs space-y-2 backdrop-blur-md">
+          <div className="mb-4 p-3.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-200 text-xs space-y-2 backdrop-blur-md">
             <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
               <div>
-                <div className="font-bold text-purple-300">OTP Sent to Mail</div>
-                <div className="text-[11px] text-purple-200/80 leading-snug mt-0.5">
+                <div className="font-bold text-teal-300">OTP Sent to Mail</div>
+                <div className="text-[11px] text-teal-200/80 leading-snug mt-0.5">
                   A 6-digit verification code was dispatched to <strong className="text-white">{currentEmail}</strong>. Please check your inbox or spam folder.
                 </div>
               </div>
@@ -343,7 +337,7 @@ export const AuthModal: React.FC = () => {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="e.g. Alex Rivera"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-purple-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
                 />
               </div>
             </div>
@@ -360,7 +354,7 @@ export const AuthModal: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="student@university.edu"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-purple-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
                 />
               </div>
             </div>
@@ -395,7 +389,7 @@ export const AuthModal: React.FC = () => {
                       setAuthModalMode('forgot');
                       setError('');
                     }}
-                    className="text-[11px] text-purple-400 hover:underline"
+                    className="text-[11px] text-teal-400 hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -415,7 +409,7 @@ export const AuthModal: React.FC = () => {
                     }
                   }}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-purple-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
+                  className="w-full pl-10 pr-10 py-2.5 bg-slate-950/60 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none transition"
                 />
                 <button
                   type="button"
@@ -440,7 +434,7 @@ export const AuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
+            className="w-full py-3 px-4 bg-teal-700 text-white font-semibold text-xs rounded-xl shadow-lg  flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -465,7 +459,7 @@ export const AuthModal: React.FC = () => {
               type="button"
               disabled={cooldown > 0 || resending}
               onClick={() => handleResendOtp(authModalMode === 'reset_password' ? 'password_reset' : 'email_verification')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-purple-300 font-semibold disabled:opacity-50 text-xs border border-slate-700 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-teal-300 font-semibold disabled:opacity-50 text-xs border border-slate-700 transition"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
               {cooldown > 0 ? `Resend Code in ${cooldown}s` : 'Resend Verification Code'}

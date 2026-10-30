@@ -82,7 +82,7 @@ export const CodingAssistantView: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Code2 className="w-6 h-6 text-violet-400" /> Multi-Language Code Lab & Assistant
+          <Code2 className="w-6 h-6 text-teal-400" /> Multi-Language Code Lab & Assistant
         </h1>
         <p className="text-xs text-slate-400 mt-1">
           Master C++, Java, Python, and JavaScript with line-by-line explanations, bug fixes, and Big-O complexity analysis.
@@ -90,7 +90,7 @@ export const CodingAssistantView: React.FC = () => {
       </div>
 
       {/* Action Tabs & Language Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-slate-900 border border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800">
         <div className="flex flex-wrap gap-2">
           {actions.map(act => {
             const Icon = act.icon;
@@ -99,9 +99,9 @@ export const CodingAssistantView: React.FC = () => {
               <button
                 key={act.id}
                 onClick={() => setAction(act.id)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-semibold flex items-center gap-2 transition ${
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition ${
                   isActive
-                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-600/30'
+                    ? 'bg-teal-700 text-white shadow-md '
                     : 'bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
@@ -129,11 +129,11 @@ export const CodingAssistantView: React.FC = () => {
       {/* Main Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Editor Input Area */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between">
+        <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Source Code Input</span>
-              <span className="text-[10px] text-violet-400 font-mono font-semibold">{language.toUpperCase()}</span>
+              <span className="text-[10px] text-teal-400 font-mono font-semibold">{language.toUpperCase()}</span>
             </div>
 
             <textarea
@@ -141,14 +141,14 @@ export const CodingAssistantView: React.FC = () => {
               value={code}
               onChange={e => setCode(e.target.value)}
               placeholder="Paste or write code here..."
-              className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-xs font-mono text-cyan-300 focus:border-violet-500 focus:outline-none resize-none leading-relaxed"
+              className="w-full p-4 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-teal-300 focus:border-teal-500 focus:outline-none resize-none leading-relaxed"
             />
           </div>
 
           <button
             onClick={handleAnalyze}
             disabled={loading || !code.trim()}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 transition disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-teal-700 text-white font-bold text-xs shadow-lg  flex items-center justify-center gap-2 transition disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -161,11 +161,11 @@ export const CodingAssistantView: React.FC = () => {
         </div>
 
         {/* AI Output Display Area */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-4">
+        <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-4">
           <div>
             <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-              <span className="text-xs font-bold text-violet-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-violet-400" /> AI Tutor Code Analysis
+              <span className="text-xs font-bold text-teal-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-teal-400" /> AI Tutor Code Analysis
               </span>
 
               {analysisResult && (
@@ -180,7 +180,7 @@ export const CodingAssistantView: React.FC = () => {
             </div>
 
             {analysisResult ? (
-              <div className="markdown-body p-4 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed max-h-96 overflow-y-auto">
+              <div className="markdown-body p-4 rounded-lg bg-slate-950/80 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed max-h-96 overflow-y-auto">
                 <Markdown>{analysisResult}</Markdown>
               </div>
             ) : (

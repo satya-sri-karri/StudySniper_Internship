@@ -11,10 +11,10 @@ export const Toast: React.FC = () => {
   const isError = toast.type === 'error';
 
   return (
-    <div role={isError ? "alert" : "status"} className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md transition-all duration-300 animate-slide-up bg-slate-900/95 border-purple-500/30 text-white">
+    <div role={isError ? "alert" : "status"} className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-300 animate-slide-up bg-slate-900/95 border-teal-500/30 text-white">
       {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
       {isError && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />}
-      {!isSuccess && !isError && <Info className="w-5 h-5 text-purple-400 shrink-0" />}
+      {!isSuccess && !isError && <Info className="w-5 h-5 text-teal-400 shrink-0" />}
       
       <span className="text-sm font-medium pr-2">{toast.message}</span>
     </div>

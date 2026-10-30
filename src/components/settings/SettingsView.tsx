@@ -72,7 +72,7 @@ export const SettingsView: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <Settings className="w-6 h-6 text-purple-400" /> Settings & Preferences
+          <Settings className="w-6 h-6 text-teal-400" /> Settings & Preferences
         </h1>
         <p className="text-xs text-slate-400 mt-1">
           Manage your account profile, theme settings, notifications, and security.
@@ -80,9 +80,9 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Profile Section */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
         <div className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-          <UserIcon className="w-4 h-4 text-purple-400" /> Account Profile
+          <UserIcon className="w-4 h-4 text-teal-400" /> Account Profile
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-4">
@@ -126,7 +126,7 @@ export const SettingsView: React.FC = () => {
                 max="12"
                 value={dailyGoalHours}
                 onChange={e => setDailyGoalHours(Number(e.target.value))}
-                className="w-full accent-purple-500 cursor-pointer mt-2"
+                className="w-full accent-teal-500 cursor-pointer mt-2"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@ export const SettingsView: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-purple-600/30 flex items-center gap-2 transition disabled:opacity-50"
+            className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs rounded-xl shadow-md  flex items-center gap-2 transition disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Profile
           </button>
@@ -142,30 +142,30 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Theme & Display Mode */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
         <div className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-          {darkMode ? <Moon className="w-4 h-4 text-purple-400" /> : <Sun className="w-4 h-4 text-amber-400" />} Theme & Appearance
+          {darkMode ? <Moon className="w-4 h-4 text-teal-400" /> : <Sun className="w-4 h-4 text-amber-400" />} Theme & Appearance
         </div>
 
         <div className="flex items-center justify-between">
           <div>
             <div className="text-xs font-semibold text-slate-200">Dark / Light Interface</div>
-            <div className="text-[11px] text-slate-400">Toggle dark glassmorphism mode or crisp light view.</div>
+            <div className="text-[11px] text-slate-400">Choose a light or dark workspace.</div>
           </div>
           <button
             onClick={toggleDarkMode}
             className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition flex items-center gap-2"
           >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-purple-400" />}
+            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-teal-400" />}
             {darkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>
       </div>
 
       {/* Password & Security */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
         <div className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Lock className="w-4 h-4 text-purple-400" /> Password & Security
+          <Lock className="w-4 h-4 text-teal-400" /> Password & Security
         </div>
 
         {user?.authProvider==='firebase' ? <p className="text-sm">Your password is managed by Google. Use Google account security settings to change it.</p> : <form onSubmit={handleChangePassword} className="space-y-3 max-w-md">
@@ -204,7 +204,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Delete / Danger Zone */}
-      <div className="p-6 rounded-3xl bg-slate-900 border border-rose-500/20 space-y-4">
+      <div className="p-6 rounded-xl bg-slate-900 border border-rose-500/20 space-y-4">
         <div className="text-sm font-bold text-rose-400 flex items-center gap-2 border-b border-slate-800 pb-3">
           <Trash2 className="w-4 h-4" /> Danger Zone
         </div>

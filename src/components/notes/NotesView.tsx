@@ -157,7 +157,7 @@ export const NotesView: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <FileText className="w-6 h-6 text-purple-400" /> AI Notes Engine & PDF Exporter
+          <FileText className="w-6 h-6 text-teal-400" /> AI Notes Engine & PDF Exporter
         </h1>
         <p className="text-xs text-slate-400 mt-1">
           Paste textbook excerpts or lecture transcripts to generate structured study summaries, definitions, and key formulas.
@@ -167,9 +167,9 @@ export const NotesView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form & Notes List */}
         <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+          <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
             <div className="text-sm font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" /> Summarize Raw Text
+              <Sparkles className="w-4 h-4 text-teal-400" /> Summarize Raw Text
             </div>
 
             <div>
@@ -179,7 +179,7 @@ export const NotesView: React.FC = () => {
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
                 placeholder="e.g. Thermodynamics Laws"
-                className="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-purple-500 rounded-xl text-slate-100 text-xs focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 text-xs focus:outline-none"
               />
             </div>
 
@@ -190,30 +190,30 @@ export const NotesView: React.FC = () => {
                 value={rawContent}
                 onChange={e => setRawContent(e.target.value)}
                 placeholder="Paste notes, lecture transcripts, or textbook paragraphs here..."
-                className="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-purple-500 rounded-xl text-slate-100 text-xs focus:outline-none resize-none"
+                className="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 text-xs focus:outline-none resize-none"
               />
             </div>
 
             <button
               onClick={handleGenerateNote}
               disabled={generating || !topic.trim() || !rawContent.trim()}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-teal-700 text-white font-bold text-xs shadow-lg  flex items-center justify-center gap-2 transition disabled:opacity-50"
             >
               {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate AI Note Summary'}
             </button>
           </div>
 
           {/* Saved Notes List */}
-          <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">Saved Notes ({notes.length})</div>
             <div className="space-y-1.5 max-h-56 overflow-y-auto">
               {notes.map(n => (
                 <div
                   key={n.id}
                   onClick={() => setSelectedNote(n)}
-                  className={`p-3 rounded-2xl border text-xs cursor-pointer transition flex items-center justify-between group ${
+                  className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between group ${
                     selectedNote?.id === n.id
-                      ? 'bg-purple-600/20 border-purple-500/40 text-purple-200'
+                      ? 'bg-teal-600/20 border-teal-500/40 text-teal-200'
                       : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:bg-slate-800'
                   }`}
                 >
@@ -236,10 +236,10 @@ export const NotesView: React.FC = () => {
         {/* Selected Note View (2 cols) */}
         <div className="lg:col-span-2">
           {selectedNote ? (
-            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-6">
               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                 <div>
-                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
                     {selectedNote.subject}
                   </span>
                   <h2 className="text-xl font-bold text-white mt-1">{selectedNote.title}</h2>
@@ -248,16 +248,16 @@ export const NotesView: React.FC = () => {
 
                 <button
                   onClick={handlePrintPdf}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs flex items-center gap-2 shadow-md shadow-purple-600/30 transition"
+                  className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs flex items-center gap-2 shadow-md  transition"
                 >
                   <Printer className="w-4 h-4" /> Export as Printable PDF
                 </button>
               </div>
 
               {/* Summary */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30">
-                <div className="text-xs font-bold text-purple-300 flex items-center gap-1.5 mb-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" /> Summary
+              <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-teal-500/30">
+                <div className="text-xs font-bold text-teal-300 flex items-center gap-1.5 mb-2">
+                  <Sparkles className="w-4 h-4 text-teal-400" /> Summary
                 </div>
                 <div className="text-xs text-slate-300 leading-relaxed">{selectedNote.summary}</div>
               </div>
@@ -269,7 +269,7 @@ export const NotesView: React.FC = () => {
                   <ul className="space-y-1.5 text-xs text-slate-200">
                     {selectedNote.keyPoints.map((kp, idx) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-purple-400 font-bold">•</span>
+                        <span className="text-teal-400 font-bold">•</span>
                         <span>{kp}</span>
                       </li>
                     ))}
@@ -284,7 +284,7 @@ export const NotesView: React.FC = () => {
                   <div className="space-y-2">
                     {selectedNote.definitions.map((def, idx) => (
                       <div key={idx} className="p-3 rounded-xl bg-slate-800/60 border border-slate-800 text-xs">
-                        <strong className="text-purple-300">{def.term}:</strong>{' '}
+                        <strong className="text-teal-300">{def.term}:</strong>{' '}
                         <span className="text-slate-300">{def.definition}</span>
                       </div>
                     ))}
@@ -296,7 +296,7 @@ export const NotesView: React.FC = () => {
               {selectedNote.formulas.length > 0 && (
                 <div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Important Formulas</div>
-                  <div className="space-y-1.5 font-mono text-xs text-cyan-300">
+                  <div className="space-y-1.5 font-mono text-xs text-teal-300">
                     {selectedNote.formulas.map((f, idx) => (
                       <div key={idx} className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                         {f}
@@ -307,7 +307,7 @@ export const NotesView: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="p-12 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-3xl">
+            <div className="p-12 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-xl">
               Select or generate a note summary to view detailed breakdowns and export to PDF.
             </div>
           )}

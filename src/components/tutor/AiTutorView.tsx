@@ -37,9 +37,9 @@ export const AiTutorView: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const personas = [
-    { id: 'socratic', name: '🎯 Socratic Tutor', desc: 'Explains concepts clearly and asks guiding questions' },
-    { id: 'exam', name: '⚡ Strict Exam Prep', desc: 'Focuses on high-yield exam traps & key definitions' },
-    { id: 'eli5', name: '💡 ELI5 Simple', desc: 'Explains complex topics using real-world analogies' }
+    { id: 'socratic', name: ' Socratic Tutor', desc: 'Explains concepts clearly and asks guiding questions' },
+    { id: 'exam', name: ' Strict Exam Prep', desc: 'Focuses on high-yield exam traps & key definitions' },
+    { id: 'eli5', name: ' ELI5 Simple', desc: 'Explains complex topics using real-world analogies' }
   ];
 
   const suggestedPrompts = [
@@ -184,11 +184,11 @@ export const AiTutorView: React.FC = () => {
   return (
     <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-4 animate-fade-in">
       {/* Left Chat History List */}
-      <div className="w-full md:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-3 flex flex-col shrink-0 shadow-sm">
+      <div className="w-full md:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col shrink-0 shadow-sm">
       <div className="p-3 border-b border-slate-700"><SourceSelect value={documentId} onChange={setDocumentId}/><p className="text-xs text-slate-400">Answers use only this source; ask specific questions for reliable retrieval.</p></div>
         <button
           onClick={handleCreateNewChat}
-          className="w-full py-2.5 px-3 mb-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-2xl shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition"
+          className="w-full py-2.5 px-3 mb-3 bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-md  flex items-center justify-center gap-2 transition"
         >
           <Plus className="w-4 h-4" /> New AI Session
         </button>
@@ -204,12 +204,12 @@ export const AiTutorView: React.FC = () => {
                 onClick={() => {controllerRef.current?.abort();setActiveChatId(c.id);}}
                 className={`w-full p-2.5 rounded-xl text-xs font-medium cursor-pointer transition flex items-center justify-between group ${
                   isActive
-                    ? 'bg-purple-50 dark:bg-purple-600/20 border border-purple-200 dark:border-purple-500/30 text-purple-800 dark:text-purple-200 font-semibold'
+                    ? 'bg-teal-50 dark:bg-teal-600/20 border border-teal-200 dark:border-teal-500/30 text-teal-800 dark:text-teal-200 font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <div className="flex items-center gap-2 truncate pr-2">
-                  <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`} />
+                  <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}`} />
                   <span className="truncate">{c.title}</span>
                 </div>
                 <button
@@ -226,21 +226,21 @@ export const AiTutorView: React.FC = () => {
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col overflow-hidden relative shadow-sm">
+      <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col overflow-hidden relative shadow-sm">
         {/* Chat Header Controls */}
         <div className="p-3.5 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/90 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-8 h-8 rounded-xl bg-teal-700 flex items-center justify-center text-white shadow-md">
               <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                Sniper AI Tutor
+                Study tutor
                 <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-500/20 dark:border-emerald-500/30">
                   Configured AI model
                 </span>
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400">Streaming Active Recall Mode</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">Answers grounded in your selected source</div>
             </div>
           </div>
 
@@ -273,15 +273,15 @@ export const AiTutorView: React.FC = () => {
             return (
               <div key={msg.id} className={`flex gap-3 max-w-3xl ${isUser ? 'ml-auto justify-end' : 'mr-auto justify-start'}`}>
                 {!isUser && (
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 dark:bg-purple-600/30 border border-purple-500/20 dark:border-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-300 shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-600/30 border border-teal-500/20 dark:border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-300 shrink-0">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
 
                 <div
-                  className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed space-y-2 relative group ${
+                  className={`p-4 rounded-lg text-xs sm:text-sm leading-relaxed space-y-2 relative group ${
                     isUser
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/20'
+                      ? 'bg-teal-700 text-white shadow-md '
                       : 'bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-900 dark:text-slate-100 shadow-sm'
                   }`}
                 >
@@ -303,7 +303,7 @@ export const AiTutorView: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleBookmark(msg.id)}
-                          className={`p-1 hover:text-purple-600 dark:hover:text-purple-300 transition ${msg.bookmarked ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400 dark:text-slate-500'}`}
+                          className={`p-1 hover:text-teal-600 dark:hover:text-teal-300 transition ${msg.bookmarked ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500'}`}
                           title="Bookmark message"
                         >
                           <Bookmark className="w-3.5 h-3.5 fill-current" />
@@ -317,7 +317,7 @@ export const AiTutorView: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleSend(`Regenerate and expand on this previous explanation: ${msg.content.slice(0, 100)}`)}
-                          className="p-1 hover:text-purple-300 transition"
+                          className="p-1 hover:text-teal-300 transition"
                           title="Regenerate / Expand"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
@@ -345,9 +345,9 @@ export const AiTutorView: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => handleSend(sp)}
-                className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-slate-800/80 hover:bg-purple-100 dark:hover:bg-slate-800 border border-purple-200 dark:border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 transition text-left"
+                className="px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-slate-800/80 hover:bg-teal-100 dark:hover:bg-slate-800 border border-teal-200 dark:border-teal-500/20 text-xs text-teal-700 dark:text-teal-300 transition text-left"
               >
-                ✨ {sp}
+                 {sp}
               </button>
             ))}
           </div>
@@ -360,7 +360,7 @@ export const AiTutorView: React.FC = () => {
               e.preventDefault();
               handleSend();
             }}
-            className="flex items-center gap-2 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 focus-within:border-purple-500 rounded-2xl px-4 py-2 transition shadow-sm"
+            className="flex items-center gap-2 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 focus-within:border-teal-500 rounded-lg px-4 py-2 transition shadow-sm"
           >
             <input
               type="text"
@@ -373,7 +373,7 @@ export const AiTutorView: React.FC = () => {
             <button
               type="submit"
               disabled={loading || !prompt.trim()}
-              className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40 transition shadow-md shadow-purple-600/30"
+              className="p-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white disabled:opacity-40 transition shadow-md "
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>

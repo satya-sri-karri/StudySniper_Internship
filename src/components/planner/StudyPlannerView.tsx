@@ -134,7 +134,7 @@ export const StudyPlannerView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form & Plan List Sidebar */}
         <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+          <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
             <div className="text-sm font-bold text-white flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-400" /> Generate Timetable
             </div>
@@ -178,21 +178,21 @@ export const StudyPlannerView: React.FC = () => {
             <button
               onClick={handleGeneratePlan}
               disabled={generating || !subjectInput.trim()}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-teal-700 text-white font-bold text-xs shadow-lg  flex items-center justify-center gap-2 transition disabled:opacity-50"
             >
               {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Study Plan'}
             </button>
           </div>
 
           {/* Saved Plans List */}
-          <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">Saved Timetables</div>
             <div className="space-y-1.5 max-h-56 overflow-y-auto">
               {plans.map(p => (
                 <div
                   key={p.id}
                   onClick={() => setActivePlan(p)}
-                  className={`p-3 rounded-2xl border text-xs cursor-pointer transition flex items-center justify-between group ${
+                  className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between group ${
                     activePlan?.id === p.id
                       ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
                       : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:bg-slate-800'
@@ -217,7 +217,7 @@ export const StudyPlannerView: React.FC = () => {
         {/* Timetable Checklist Display (2 cols) */}
         <div className="lg:col-span-2">
           {activePlan ? (
-            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-6">
               {/* Header */}
               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                 <div>
@@ -247,14 +247,14 @@ export const StudyPlannerView: React.FC = () => {
 
               {/* Task Checklist */}
               <div className="space-y-3">
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Day-by-Day Master Timetable</div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Your day-by-day timetable</div>
 
                 <div className="space-y-2">
                   {activePlan.tasks.map(task => (
                     <div
                       key={task.id}
                       onClick={() => handleToggleTask(task.id)}
-                      className={`p-3.5 rounded-2xl border text-xs cursor-pointer transition flex items-center justify-between ${
+                      className={`p-3.5 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between ${
                         task.completed
                           ? 'bg-slate-800/40 border-slate-800/60 text-slate-500 line-through'
                           : 'bg-slate-800/80 border-slate-700/60 text-slate-200 hover:border-emerald-500/40'
@@ -282,7 +282,7 @@ export const StudyPlannerView: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="p-12 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-3xl">
+            <div className="p-12 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-xl">
               Generate a study plan to construct your day-by-day exam schedule.
             </div>
           )}

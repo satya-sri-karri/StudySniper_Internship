@@ -180,7 +180,7 @@ export const DocumentsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <UploadCloud className="w-6 h-6 text-blue-400" /> Upload Documents & Smart QA
+            <UploadCloud className="w-6 h-6 text-teal-400" /> Upload Documents & Smart QA
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Upload PDF, DOCX, PPTX, or TXT files to generate summaries and ask Gemini questions.
@@ -192,7 +192,7 @@ export const DocumentsView: React.FC = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg  transition disabled:opacity-50"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
             Upload Document
@@ -204,7 +204,7 @@ export const DocumentsView: React.FC = () => {
                 'Quantum mechanics describes the fundamental physical properties of nature at the scale of atoms and subatomic particles. Wave-particle duality states that matter exhibits both wave-like and particle-like behaviors. Schrödinger Equation governing wavefunction evolution: iħ ∂/∂t Ψ = ĤΨ.'
               )
             }
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-300 border border-slate-700 transition"
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-teal-300 border border-slate-700 transition"
           >
             + Sample PDF
           </button>
@@ -215,7 +215,7 @@ export const DocumentsView: React.FC = () => {
                 'Dynamic Programming (DP) is an algorithmic optimization technique that breaks down complex problems into overlapping subproblems, storing results in a lookup table. Time complexity of 0/1 Knapsack using DP is O(n*W).'
               )
             }
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-purple-300 border border-slate-700 transition"
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-teal-300 border border-slate-700 transition"
           >
             + Sample DOCX
           </button>
@@ -241,13 +241,13 @@ export const DocumentsView: React.FC = () => {
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`p-8 rounded-3xl border-2 border-dashed transition text-center flex flex-col items-center justify-center gap-3 cursor-pointer group ${
+        className={`p-8 rounded-xl border-2 border-dashed transition text-center flex flex-col items-center justify-center gap-3 cursor-pointer group ${
           isDragging
-            ? 'border-blue-500 bg-blue-500/10'
-            : 'border-slate-800 bg-slate-900/60 hover:border-blue-500/50 hover:bg-slate-900/90'
+            ? 'border-teal-500 bg-teal-500/10'
+            : 'border-slate-800 bg-slate-900/60 hover:border-teal-500/50 hover:bg-slate-900/90'
         }`}
       >
-        <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <div className="w-12 h-12 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
           {uploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <UploadCloud className="w-6 h-6" />}
         </div>
         <div>
@@ -259,7 +259,7 @@ export const DocumentsView: React.FC = () => {
                   e.stopPropagation();
                   fileInputRef.current?.click();
                 }}
-                className="text-blue-400 underline hover:text-blue-300 transition"
+                className="text-teal-400 underline hover:text-teal-300 transition"
               >
                 browse files
               </span>
@@ -272,10 +272,10 @@ export const DocumentsView: React.FC = () => {
       {/* Document Workspace Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Document List (1 col) */}
-        <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
           <div className="text-xs font-bold text-slate-300 uppercase tracking-wider px-2 mb-2 flex items-center justify-between">
             <span>Stored Documents ({documents.length})</span>
-            <span className="text-[10px] text-blue-400 font-normal">Indexed</span>
+            <span className="text-[10px] text-teal-400 font-normal">Indexed</span>
           </div>
 
           {documents.map(doc => {
@@ -287,14 +287,14 @@ export const DocumentsView: React.FC = () => {
                   setSelectedDoc(doc);
                   setQaPairs([]);
                 }}
-                className={`p-3 rounded-2xl border text-xs cursor-pointer transition flex items-center justify-between group ${
+                className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between group ${
                   isActive
-                    ? 'bg-blue-600/20 border-blue-500/40 text-blue-200 shadow-md'
+                    ? 'bg-teal-600/20 border-teal-500/40 text-teal-200 shadow-md'
                     : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-3 truncate pr-2">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center shrink-0">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div className="truncate">
@@ -318,11 +318,11 @@ export const DocumentsView: React.FC = () => {
         {/* Selected Document Detail & QA (2 cols) */}
         <div className="lg:col-span-2 space-y-4">
           {selectedDoc ? (
-            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-6">
               {/* Doc Title & Meta */}
               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                 <div>
-                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
                     {selectedDoc.fileType}
                   </span>
                   <h2 className="text-xl font-bold text-white mt-1">{selectedDoc.fileName}</h2>
@@ -332,9 +332,9 @@ export const DocumentsView: React.FC = () => {
 
               {/* Summary Card */}
               {selectedDoc.summary && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border border-blue-500/30">
-                  <div className="text-xs font-bold text-blue-300 flex items-center gap-1.5 mb-2">
-                    <Sparkles className="w-4 h-4 text-blue-400" /> Source Preview
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-teal-500/30">
+                  <div className="text-xs font-bold text-teal-300 flex items-center gap-1.5 mb-2">
+                    <Sparkles className="w-4 h-4 text-teal-400" /> Source Preview
                   </div>
                   <div className="markdown-body text-xs text-slate-300">
                     <Markdown>{selectedDoc.summary}</Markdown>
@@ -365,9 +365,9 @@ export const DocumentsView: React.FC = () => {
                         return acc;
                       }, [])
                       .map((slide, sIdx) => (
-                        <div key={sIdx} className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-1">
+                        <div key={sIdx} className="p-3.5 rounded-lg bg-slate-950/90 border border-slate-800 space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30">
+                            <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 text-[10px] font-bold border border-teal-500/30">
                               Slide {slide.num}
                             </span>
                           </div>
@@ -378,7 +378,7 @@ export const DocumentsView: React.FC = () => {
                       ))}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs text-slate-300 leading-relaxed max-h-52 overflow-y-auto font-mono whitespace-pre-wrap">
+                  <div className="p-4 rounded-lg bg-slate-950/80 border border-slate-800/80 text-xs text-slate-300 leading-relaxed max-h-52 overflow-y-auto font-mono whitespace-pre-wrap">
                     {selectedDoc.extractedText}
                   </div>
                 )}
@@ -387,14 +387,14 @@ export const DocumentsView: React.FC = () => {
               {/* Document QA Section */}
               <div className="pt-4 border-t border-slate-800 space-y-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-purple-400" /> Ask Questions About This Document
+                  <MessageSquare className="w-4 h-4 text-teal-400" /> Ask Questions About This Document
                 </h3>
 
                 {qaPairs.length > 0 && (
                   <div className="space-y-3">
                     {qaPairs.map((pair, idx) => (
-                      <div key={idx} className="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-800 space-y-2 text-xs">
-                        <div className="font-semibold text-purple-300">Q: {pair.q}</div>
+                      <div key={idx} className="p-3.5 rounded-lg bg-slate-800/60 border border-slate-800 space-y-2 text-xs">
+                        <div className="font-semibold text-teal-300">Q: {pair.q}</div>
                         <div className="markdown-body text-slate-300 text-xs">
                           <Markdown>{pair.a}</Markdown>{pair.citations?.map((c,i)=><blockquote key={i} className="mt-2 border-l-2 pl-2">[{c.chunkId}] {c.quote}</blockquote>)}
                         </div>
@@ -410,12 +410,12 @@ export const DocumentsView: React.FC = () => {
                     onChange={e => setQuestion(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAskQuestion()}
                     placeholder="e.g. What is the core formula mentioned in this document?"
-                    className="flex-1 px-4 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-blue-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none"
+                    className="flex-1 px-4 py-2.5 bg-slate-800/80 border border-slate-700/60 focus:border-teal-500 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none"
                   />
                   <button
                     onClick={handleAskQuestion}
                     disabled={askLoading || !question.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-2 transition disabled:opacity-40"
+                    className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs flex items-center gap-2 transition disabled:opacity-40"
                   >
                     {askLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ask AI'}
                   </button>

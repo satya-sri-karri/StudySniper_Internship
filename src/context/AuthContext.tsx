@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('studysniper_theme');
-    return saved ? saved === 'dark' : true; // Default dark mode for modern SaaS feel
+    return saved ? saved === 'dark' : false; // Default to the light study workspace; preserve saved preferences.
   });
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(newToken);
     setUser(newUser);
     setAuthModalOpen(false);
-    showToast(`Welcome back, ${newUser.name}! 🔥`, 'success');
+    showToast(`Welcome back, ${newUser.name}! `, 'success');
   };
 
   const logout = () => {

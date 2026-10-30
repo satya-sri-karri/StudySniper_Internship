@@ -56,20 +56,20 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
 
   let label: 'Weak' | 'Fair' | 'Good' | 'Strong' = 'Weak';
   let badgeBg = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
-  let barGradient = 'from-rose-500 to-red-600';
+  let barGradient = 'bg-rose-500';
 
   if (score >= 90) {
     label = 'Strong';
     badgeBg = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-    barGradient = 'from-emerald-400 to-cyan-400';
+    barGradient = 'bg-emerald-500';
   } else if (score >= 70) {
     label = 'Good';
-    badgeBg = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
-    barGradient = 'from-cyan-400 to-blue-500';
+    badgeBg = 'bg-teal-500/20 text-teal-300 border-teal-500/30';
+    barGradient = 'bg-teal-500';
   } else if (score >= 45) {
     label = 'Fair';
     badgeBg = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    barGradient = 'from-amber-400 to-orange-500';
+    barGradient = 'bg-amber-500';
   }
 
   const requirements = [
@@ -87,7 +87,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
           {score >= 90 ? (
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           ) : score >= 45 ? (
-            <Shield className="w-4 h-4 text-cyan-400" />
+            <Shield className="w-4 h-4 text-teal-400" />
           ) : (
             <ShieldAlert className="w-4 h-4 text-rose-400" />
           )}
@@ -101,7 +101,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
       {/* Progress Bar */}
       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
         <div
-          className={`h-full bg-gradient-to-r ${barGradient} transition-all duration-300 ease-out`}
+          className={`h-full ${barGradient} transition-all duration-300 ease-out`}
           style={{ width: `${score}%` }}
         />
       </div>

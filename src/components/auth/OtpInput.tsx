@@ -91,8 +91,8 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           onKeyDown={e => handleKeyDown(e, idx)}
           className={`w-11 h-13 text-center text-xl font-bold rounded-xl transition-all outline-none shadow-sm ${
             digits[idx]
-              ? 'bg-purple-500/20 text-purple-200 border-2 border-purple-500 shadow-purple-500/10'
-              : 'bg-slate-900/70 text-white border border-slate-700/60 focus:border-purple-400 focus:bg-slate-800'
+              ? 'bg-teal-500/20 text-teal-200 border-2 border-teal-500 '
+              : 'bg-slate-900/70 text-white border border-slate-700/60 focus:border-teal-400 focus:bg-slate-800'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-500'}`}
         />
       ))}
