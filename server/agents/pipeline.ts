@@ -1,4 +1,4 @@
-import {generateValidated} from '../services/gemini.ts';
+import {generateValidated} from '../services/ai.ts';
 import {retrieve as retrieveChunks} from '../services/retrieval.ts';
 import {HttpError} from '../http.ts';
 import {parserSchema,analyzerSchema,plannerSchema,coachSchema,evaluatorSchema,type Pipeline,type Topic,type Assessment} from './schemas.ts';

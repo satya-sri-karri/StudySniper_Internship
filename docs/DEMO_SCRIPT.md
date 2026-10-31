@@ -10,7 +10,7 @@ This route needs no AI or email credentials after local setup. The dataset is sy
 
 ### 0:00–0:20 — The problem
 
-**Screen:** Dashboard and amber Demo workspace banner.
+**Screen:** Dashboard and Demo workspace banner.
 
 **Say:** “A chatbot can explain a chapter and draft a timetable. But after I miss a day or fail a quiz, I still have to reconnect my syllabus, results and remaining time. StudySniper keeps those records together and turns performance into the next study action. This is a labeled synthetic demo workspace.”
 
@@ -52,11 +52,11 @@ This route needs no AI or email credentials after local setup. The dataset is sy
 
 **Click:** **3 · Check readiness**, reload the page and show that the saved results remain.
 
-**Say:** “The differentiator is this closed loop: syllabus, plan, attempt, evidence, revised plan and next review. It survives a page reload and does not require another prompt to connect the records. The current prototype passed forty-two tests. It uses Gemini and single-process JSON storage; live-provider performance and learning gains are not yet validated. Our next milestone is a student pilot and scalable persistence.”
+**Say:** “The differentiator is this closed loop: syllabus, plan, attempt, evidence, revised plan and next review. It survives a page reload and does not require another prompt to connect the records. The current prototype passed forty-eight tests. It uses Grok and single-process JSON storage; live-provider performance and learning gains are not yet validated. Our next milestone is a student pilot and scalable persistence.”
 
 ## If asked for live AI generation
 
-Outside the timed route, configure `GEMINI_API_KEY`, upload a small readable syllabus with explanatory notes, select a future exam date and click **Upload & create my plan**. The target is under a minute, with a 55-second client deadline. If it times out, show saved progress and resume the pending stage; do not claim the prebuilt plan was generated live. Scanned PDFs require external OCR.
+Outside the timed route, configure `XAI_API_KEY`, upload a small readable syllabus with explanatory notes, select a future exam date and click **Upload & create my plan**. The target is under a minute, with a 55-second client deadline. If it times out, show saved progress and resume the pending stage; do not claim the prebuilt plan was generated live. Scanned PDFs require external OCR.
 
 For source grounding, open the tutor, select the networking document and ask “How does TCP provide reliable delivery?” Show the supporting excerpt. If the provider is unavailable, inspect the saved source quotes and explain that new answer generation is unavailable; do not substitute a fabricated response.
 

@@ -28,7 +28,7 @@ Readiness is a transparent practice heuristic, **not a validated prediction of e
 
 ## Architecture
 
-The implemented stack is **React 19 + TypeScript + Vite, Express 4, JWT, Gemini and a single-process JSON database**. Google sign-in through Firebase is optional. MongoDB and Anthropic were in the original brief; neither migration is implemented in this release.
+The implemented stack is **React 19 + TypeScript + Vite, Express 4, JWT, Grok and a single-process JSON database**. Google sign-in through Firebase is optional. MongoDB and Anthropic were in the original brief; neither migration is implemented in this release.
 
 ```mermaid
 flowchart TD
@@ -38,7 +38,7 @@ flowchart TD
   API --> Agents["Parser → Analyzer → Planner"]
   API --> Retrieve["Owned source: keyword retrieval"]
   Retrieve --> Coach["Grounded coach and evaluator"]
-  Agents --> LLM["Gemini + Zod validation + bounded retry"]
+  Agents --> LLM["Grok + Zod validation + bounded retry"]
   Coach --> LLM
   Agents --> DB["Persistent JSON: sources, plans and results"]
   Coach --> Learn["Mastery, review dates and readiness"]
@@ -116,7 +116,7 @@ The fixture includes six weighted networking topics, a deadline 14 days away, th
 
 | Capability | Environment configuration |
 |---|---|
-| New AI generation | `GEMINI_API_KEY`, `GEMINI_MODEL` available to your project |
+| New AI generation | `XAI_API_KEY`, `XAI_MODEL` available to your project |
 | Email signup, OTP and recovery | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` |
 | Google sign-in | Matching server `FIREBASE_API_KEY` / `FIREBASE_PROJECT_ID` and browser `VITE_FIREBASE_*`; enable Google auth and authorize your domain in Firebase |
 | Storage and port | `DATA_DIR` (persistent local disk), `PORT` (default 3000) |
@@ -161,9 +161,21 @@ The JSON store uses atomic replacement, rolls back failed writes and rejects com
 
 ## Validation and jury materials
 
-The Step 5 implementation passed **42 regression tests**, TypeScript validation, the production build and production HTTP smoke checks. Chromium checks covered the one-click flow, demo navigation and a 390px mobile viewport with no page errors or page overflow. Automated AI responses were mocked; live Gemini, SMTP and Firebase credentials remain unverified. These checks are not a measured learning-outcome study or a full accessibility audit.
+The Step 5 implementation passed **42 regression tests**, TypeScript validation, the production build and production HTTP smoke checks. Chromium checks covered the one-click flow, demo navigation and a 390px mobile viewport with no page errors or page overflow. Automated AI responses were mocked; live Grok, SMTP and Firebase credentials remain unverified. These checks are not a measured learning-outcome study or a full accessibility audit.
 
 - [Three-minute demo script](docs/DEMO_SCRIPT.md): timed narration, exact clicks and a provider-independent presentation route.
 - [Ten jury questions and answers](docs/JURY_QA.md): concise, defensible explanations with implementation evidence.
 - [Step 6 change log](STEP6_CHANGELOG.md) and [complete changed contents](STEP6_FULL_CHANGED_FILES.md).
 - Historical implementation records: [Step 2](STEP2_CHANGELOG.md), [Step 3](STEP3_CHANGELOG.md), [Step 4](STEP4_CHANGELOG.md), [Step 5](STEP5_CHANGELOG.md).
+
+## Grok configuration and provider boundary
+
+The provider migration passes **48 tests**, TypeScript validation and the production build. These include HTTP configuration, safe error mapping, bounded validation retries and cancellation. See [changed files](GROK_CHANGELOG.md) and [complete changed contents](GROK_FULL_CHANGED_FILES.md).
+
+Set `XAI_API_KEY` to a private xAI API key and `XAI_MODEL` to a text model available to that key. The template defaults to `grok-4.7`; override it if your account uses another supported model. Existing `GEMINI_*` settings are no longer used. Restart the server after changing `.env` (and check `.env.local` for overrides). Existing plans and study history require no migration.
+
+The server calls `https://api.x.ai/v1/chat/completions` with native fetch; no new SDK is required. This compatibility endpoint keeps the existing bounded text-in/text-out workflow. Each request has a 25-second timeout, combined with any quick-plan deadline. JSON is validated locally with Zod and source/domain checks, with one malformed-output retry; this does not claim provider-enforced JSON Schema. No web-search tools are enabled. The former unused Gemini streaming helper and SDK were removed; grounded tutor answers still pass validation before delivery.
+
+Grok is the language-generation component. StudySniper owns topic IDs, saved results, deterministic replanning, revision intervals, reminders and readiness calculations. Those behaviors do not depend on the model brand. Validate real generation and latency with your own key before presenting; automated provider tests use mocked responses.
+
+Provider reference: https://docs.x.ai/developers/model-capabilities/legacy/chat-completions

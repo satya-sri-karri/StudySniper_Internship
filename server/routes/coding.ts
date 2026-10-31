@@ -1,7 +1,7 @@
 import { Router } from '../http.ts';
 import { Response } from 'express';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { askGemini } from '../services/gemini.ts';
+import { askAI } from '../services/ai.ts';
 
 const router = Router();
 
@@ -27,7 +27,7 @@ router.post('/analyze', authenticateToken, async (req: AuthRequest, res: Respons
     prompt = `Generate 2 practical, well-commented coding exercises and solutions related to the concepts demonstrated in this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
   }
 
-  const response = await askGemini(prompt, systemPrompt);
+  const response = await askAI(prompt, systemPrompt);
 
   return res.json({ action: act, language, response });
 });

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'studysniper-agents-'));
-process.env.DATA_DIR=directory;process.env.JWT_SECRET=randomBytes(48).toString('hex');process.env.NODE_ENV='test';process.env.GEMINI_API_KEY='test-only';
+process.env.DATA_DIR=directory;process.env.JWT_SECRET=randomBytes(48).toString('hex');process.env.NODE_ENV='test';process.env.XAI_API_KEY='test-only';
 const nativeFetch=globalThis.fetch;
 const {app}=await import('../server/app.ts');
 const {db}=await import('../server/db.ts');
@@ -20,7 +20,7 @@ const parsed={title:'Networks',units:[{name:'Networks',examDate:null,dateQuote:n
 function account(id:string){const user={id,name:id,email:id+'@example.com',passwordHash:'unused',isVerified:true,tokenVersion:0,streakDays:0,lastActiveDate:'',createdAt:new Date().toISOString()};db.get.users.push(user);db.save();return generateToken(user.id,user.email);}
 let a:string,b:string,runId:string,assessmentId:string;
 async function request(route:string,method='GET',body?:unknown,token=a){const r=await nativeFetch(base+'/api/agents'+route,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body===undefined?undefined:JSON.stringify(body)});return {status:r.status,data:await r.json()};}
-function mock(...values:unknown[]){outputs=values;calls=0;globalThis.fetch=async()=>{calls++;const value=outputs.shift();assert.notEqual(value,undefined,'Unexpected extra provider call');return new Response(JSON.stringify({candidates:[{content:{parts:[{text:typeof value==='string'?value:JSON.stringify(value)}]}}]}),{headers:{'Content-Type':'application/json'}});};}
+function mock(...values:unknown[]){outputs=values;calls=0;globalThis.fetch=async()=>{calls++;const value=outputs.shift();assert.notEqual(value,undefined,'Unexpected extra provider call');return new Response(JSON.stringify({choices:[{message:{content:typeof value==='string'?value:JSON.stringify(value)}}]}),{headers:{'Content-Type':'application/json'}});};}
 before(async()=>{a=account('owner');b=account('other');db.get.documents.push({id:'source',userId:'owner',fileName:'networks.txt',fileType:'TXT',fileSize:source.length,extractedText:source,uploadedAt:new Date().toISOString()});db.save();server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));base=`http://127.0.0.1:${server.address().port}`;});
 after(async()=>{globalThis.fetch=nativeFetch;await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(directory,{recursive:true,force:true});});
 test('parser retries malformed JSON, validates ownership and persists actual syllabus',async()=>{
@@ -80,7 +80,7 @@ test('quick plan validates ownership and creates a linked plan in one request',a
  assert.equal(r.status,201);assert.equal(calls,3);assert.equal(r.data.pipeline.planId,r.data.studyPlan.id);assert.ok(r.data.elapsedMs<55000);assert.equal(r.data.studyPlan.tasks[0].topicId,'u1t1');
 });
 test('quick plan deadline preserves parsed progress without saving late output',async()=>{
- calls=0;globalThis.fetch=async()=>{calls++;if(calls===2)await new Promise(r=>setTimeout(r,1100));return new Response(JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify(calls===1?parsed:{topics:[{topicId:'u1t1',difficulty:2,importance:4,reason:'Core protocol'}]})}]}}]}),{headers:{'Content-Type':'application/json'}});};
+ calls=0;globalThis.fetch=async()=>{calls++;if(calls===2)await new Promise(r=>setTimeout(r,1100));return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(calls===1?parsed:{topics:[{topicId:'u1t1',difficulty:2,importance:4,reason:'Core protocol'}]})}}]}),{headers:{'Content-Type':'application/json'}});};
  const r=await request('/quick-plan','POST',{documentId:'source',dailyHours:2,examDate:future,budgetMs:1000});assert.equal(r.status,504);assert.ok(r.data.pipelineId);
  const saved=db.get.pipelines.find(p=>p.id===r.data.pipelineId)!;assert.equal(saved.analysis,undefined);assert.equal(saved.planId,undefined);assert.equal(calls,2);
 });

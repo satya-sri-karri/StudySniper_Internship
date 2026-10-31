@@ -2,7 +2,7 @@ import { Router, HttpError } from '../http.ts';
 import { Response } from 'express';
 import { db, Document } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { groundedAnswer, generateNoteSummaryJSON } from '../services/gemini.ts';
+import { groundedAnswer, generateNoteSummaryJSON } from '../services/ai.ts';
 
 import { retrieve } from '../services/retrieval.ts';
 const router = Router();
@@ -30,7 +30,7 @@ router.post('/upload', authenticateToken, async (req: AuthRequest, res: Response
   // Upload succeeds only after real extraction; use a clearly labeled source preview.
   let summary = 'Source preview: ' + textContent.slice(0,500);
   let warning: string | undefined;
-  if(process.env.GEMINI_API_KEY && req.body.summarize!==false) {
+  if(process.env.XAI_API_KEY && req.body.summarize!==false) {
     try {const result=await generateNoteSummaryJSON({topic:fileName,content:textContent.slice(0,20000)});summary=(textContent.length>20000?'Summary of first 20,000 characters: ':'')+result.summary;}
     catch {warning='Document saved, but AI summary failed. The source text is available for retry.';summary='AI summary unavailable. Source preview: '+textContent.slice(0,500);}
   }

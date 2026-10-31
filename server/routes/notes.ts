@@ -2,7 +2,7 @@ import { Router } from '../http.ts';
 import { Response } from 'express';
 import { db, Note, touchUserStreak } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { generateNoteSummaryJSON } from '../services/gemini.ts';
+import { generateNoteSummaryJSON } from '../services/ai.ts';
 
 const router = Router();
 

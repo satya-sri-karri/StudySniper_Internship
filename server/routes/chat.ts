@@ -1,8 +1,9 @@
+import {config} from '../config.ts';
 import { Router, HttpError } from '../http.ts';
 import { Response } from 'express';
 import { db, Chat, Message } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import {groundedAnswer} from '../services/gemini.ts';
+import {groundedAnswer} from '../services/ai.ts';
 import {ownedDocument,retrieve} from '../services/retrieval.ts';
 
 const router = Router();
@@ -20,13 +21,13 @@ router.get('/conversations', authenticateToken, (req: AuthRequest, res: Response
 // Create new conversation
 router.post('/conversations', authenticateToken, (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  const { title, model } = req.body;
+  const { title } = req.body;
 
   const newChat: Chat = {
     id: 'chat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
     userId,
     title: title || 'New AI Tutor Session',
-    model: model || 'gemini-2.5-flash',
+    model: config.aiModel,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };

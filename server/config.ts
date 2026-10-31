@@ -9,6 +9,6 @@ if (secret.length < 32 || /change|super.secret|example/i.test(secret)) {
 export const config = {
   jwtSecret: secret,
   production: process.env.NODE_ENV === 'production',
-  aiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  aiModel: process.env.XAI_MODEL || 'grok-4.7',
   demo: process.env.ENABLE_DEMO === 'true' && process.env.NODE_ENV !== 'production',
 };

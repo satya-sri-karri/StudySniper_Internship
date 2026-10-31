@@ -4,7 +4,7 @@ import { Router } from '../http.ts';
 import { Response } from 'express';
 import { db, Flashcard, touchUserStreak } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { generateFlashcardsJSON } from '../services/gemini.ts';
+import { generateFlashcardsJSON } from '../services/ai.ts';
 
 import { sourceForTopic } from '../services/retrieval.ts';
 const router = Router();

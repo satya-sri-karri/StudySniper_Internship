@@ -12,7 +12,7 @@ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'studysniper-test-'));
 process.env.DATA_DIR=directory;
 process.env.JWT_SECRET=randomBytes(48).toString('hex');
 process.env.NODE_ENV='test';process.env.ENABLE_DEMO='true';
-process.env.GEMINI_API_KEY='';
+process.env.XAI_API_KEY='';
 process.env.SMTP_HOST='smtp.example.invalid';process.env.SMTP_USER='test';process.env.SMTP_PASS='test';
 const delivered:any[]=[];
 const originalTransport=nodemailer.createTransport;
@@ -154,14 +154,14 @@ test('valid Firebase lookup is project-bound and foreign projects are rejected',
  } finally{globalThis.fetch=nativeFetch;}
 });
 test('malformed AI JSON gets one repair attempt; persistent invalid output is rejected',async()=>{
- const {generateValidated}=await import('../server/services/gemini.ts');const {z}=await import('zod');
- let calls=0;process.env.GEMINI_API_KEY='test-only';
- globalThis.fetch=async()=>{calls++;return new Response(JSON.stringify({candidates:[{content:{parts:[{text:calls===1?'not-json':'{"value":"valid"}'}]}}]}),{status:200,headers:{'Content-Type':'application/json'}});};
+ const {generateValidated}=await import('../server/services/ai.ts');const {z}=await import('zod');
+ let calls=0;process.env.XAI_API_KEY='test-only';
+ globalThis.fetch=async()=>{calls++;return new Response(JSON.stringify({choices:[{message:{content:calls===1?'not-json':'{"value":"valid"}'}}]}),{status:200,headers:{'Content-Type':'application/json'}});};
  try {
   const result=await generateValidated('test',z.object({value:z.string()}));assert.equal(result.value,'valid');assert.equal(calls,2);
-  calls=0;globalThis.fetch=async()=>{calls++;return new Response(JSON.stringify({candidates:[{content:{parts:[{text:'{}'}]}}]}),{status:200,headers:{'Content-Type':'application/json'}});};
+  calls=0;globalThis.fetch=async()=>{calls++;return new Response(JSON.stringify({choices:[{message:{content:'{}'}}]}),{status:200,headers:{'Content-Type':'application/json'}});};
   await assert.rejects(generateValidated('test',z.object({required:z.string()})),/invalid or unsupported content twice/);assert.equal(calls,2);
- }finally{globalThis.fetch=nativeFetch;process.env.GEMINI_API_KEY='';}
+ }finally{globalThis.fetch=nativeFetch;process.env.XAI_API_KEY='';}
 });
 test('per-user AI quota blocks repeated requests',async()=>{
  const a=await account('quota@example.com');let result:any;
@@ -169,7 +169,7 @@ test('per-user AI quota blocks repeated requests',async()=>{
  assert.equal(result.status,429);assert.match(result.data.error,/limit reached/);
 });
 test('concurrent AI work is limited to two requests per user',async()=>{
- const a=await account('concurrency@example.com');process.env.GEMINI_API_KEY='test-only';
+ const a=await account('concurrency@example.com');process.env.XAI_API_KEY='test-only';
  const pending:((r:Response)=>void)[]=[];let ready:()=>void;const started=new Promise<void>(r=>ready=r);
  globalThis.fetch=async()=>new Promise<Response>(resolve=>{pending.push(resolve);if(pending.length===2)ready();});
  const payload={topic:'TCP',rawContent:'TCP provides reliable ordered transport using acknowledgements.'};
@@ -178,14 +178,14 @@ test('concurrent AI work is limited to two requests per user',async()=>{
   await started;
   const third=await request('/api/notes/generate','POST',payload,a.token);assert.equal(third.status,429);
   const text=JSON.stringify({title:'TCP',summary:'TCP provides reliable transport.',keyPoints:['Acknowledgements'],definitions:[],formulas:[],tags:[]});
-  pending.forEach(resolve=>resolve(new Response(JSON.stringify({candidates:[{content:{parts:[{text}]}}]}),{status:200,headers:{'Content-Type':'application/json'}})));
+  pending.forEach(resolve=>resolve(new Response(JSON.stringify({choices:[{message:{content:text}}]}),{status:200,headers:{'Content-Type':'application/json'}})));
   assert.equal((await one).status,200);assert.equal((await two).status,200);
- }finally{globalThis.fetch=nativeFetch;process.env.GEMINI_API_KEY='';}
+ }finally{globalThis.fetch=nativeFetch;process.env.XAI_API_KEY='';}
 });
 
 test('quick upload skips AI summary even with a configured key',async()=>{
- const a=await account('quick-upload@example.com');process.env.GEMINI_API_KEY='test-only';let calls=0;
+ const a=await account('quick-upload@example.com');process.env.XAI_API_KEY='test-only';let calls=0;
  globalThis.fetch=async()=>{calls++;throw new Error('Provider must not run');};
  try{const r=await request('/api/documents/upload','POST',{fileName:'quick.txt',fileType:'TXT',fileSize:45,textContent:'TCP provides reliable ordered delivery.',summarize:false},a.token);assert.equal(r.status,200);assert.equal(calls,0);assert.match(r.data.document.summary,/Source preview/);}
- finally{globalThis.fetch=nativeFetch;process.env.GEMINI_API_KEY='';}
+ finally{globalThis.fetch=nativeFetch;process.env.XAI_API_KEY='';}
 });

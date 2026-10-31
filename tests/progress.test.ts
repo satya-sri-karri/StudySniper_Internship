@@ -6,7 +6,7 @@ import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'studysniper-progress-'));
-process.env.DATA_DIR=directory;process.env.JWT_SECRET=randomBytes(48).toString('hex');process.env.NODE_ENV='test';process.env.GEMINI_API_KEY='mock-only';
+process.env.DATA_DIR=directory;process.env.JWT_SECRET=randomBytes(48).toString('hex');process.env.NODE_ENV='test';process.env.XAI_API_KEY='mock-only';
 const nativeFetch=globalThis.fetch;
 const {db}=await import('../server/db.ts');
 const {app}=await import('../server/app.ts');
@@ -23,7 +23,7 @@ function fixture(id:string){
  const plan:any={id:run.planId,userId:'owner',title:'Network plan',subjects:['Networks'],examDate:future,dailyHours:1,createdAt:now.toISOString(),tasks:[{id:id+'-a',topicId:'tcp',day:addDays(today,-1),subject:'Networks',topic:'TCP',durationMinutes:40,completed:false},{id:id+'-b',topicId:'udp',day:today,subject:'Networks',topic:'UDP',durationMinutes:40,completed:false}]};return {run,plan};
 }
 async function request(url:string,method='GET',body?:unknown,token=owner){const r=await nativeFetch(base+url,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body===undefined?undefined:JSON.stringify(body)});return {status:r.status,data:await r.json()};}
-function mock(value:unknown){globalThis.fetch=async()=>new Response(JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify(value)}]}}]}),{headers:{'Content-Type':'application/json'}});}
+function mock(value:unknown){globalThis.fetch=async()=>new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(value)}}]}),{headers:{'Content-Type':'application/json'}});}
 before(async()=>{owner=user('owner');other=user('other');db.get.documents.push({id:'doc',userId:'owner',fileName:'notes.txt',fileType:'TXT',fileSize:150,extractedText:'TCP provides reliable ordered delivery. UDP sends datagrams without delivery guarantees.',uploadedAt:now.toISOString()});db.save();server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));base=`http://127.0.0.1:${server.address().port}`;});
 after(async()=>{globalThis.fetch=nativeFetch;await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(directory,{recursive:true,force:true});});
 

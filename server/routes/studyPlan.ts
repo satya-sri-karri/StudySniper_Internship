@@ -8,7 +8,7 @@ import { Router } from '../http.ts';
 import { Response } from 'express';
 import { db, StudyPlan } from '../db.ts';
 import { authenticateToken, AuthRequest } from '../middleware/auth.ts';
-import { generateStudyPlanJSON } from '../services/gemini.ts';
+import { generateStudyPlanJSON } from '../services/ai.ts';
 
 const router = Router();
 

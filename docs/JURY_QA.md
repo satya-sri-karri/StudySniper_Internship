@@ -4,11 +4,13 @@
 
 General assistants can explain content, use files and offer memory or scheduling capabilities. Our value is a purpose-built exam workflow: each syllabus topic is linked to its deadline, tasks, results, mastery and review date. A weak result automatically changes the saved plan without asking the student to copy it into another prompt. The defensible claim is integrated execution and inspectable state—not that general assistants could never reproduce these features.
 
-**Show:** Submit the saved mapped quiz, then inspect readiness and the updated timetable.
+**Show:** Generate a quiz from your own uploaded notes, submit it, then inspect readiness and the updated timetable.
+
+**Short spoken answer:** “Yes, Grok can generate an explanation or a plan. We use it for that capability. Our contribution is the system around it: a persistent syllabus model, validated scheduling, graded evidence linked to topics, and automatic updates to the next study action. The model can be replaced; the student’s learning workflow remains.”
 
 ## 2. Is this really multi-agent, or just several prompts?
 
-It is a staged agent pipeline: parser, analyzer, planner and coach/evaluator have distinct responsibilities and runtime output contracts. They use the same configured Gemini model. We do not claim independently trained models or an autonomous agent society. The engineering value is schema validation, evidence checks, bounded retries and persisted intermediate stages, which make failures recoverable.
+It is a staged agent pipeline: parser, analyzer, planner and coach/evaluator have distinct responsibilities and runtime output contracts. They use the same configured Grok model. We do not claim independently trained models or an autonomous agent society. The engineering value is schema validation, evidence checks, bounded retries and persisted intermediate stages, which make failures recoverable.
 
 **Evidence:** `server/agents/pipeline.ts`, `server/agents/schemas.ts`, `server/routes/agents.ts`.
 
@@ -56,6 +58,6 @@ This release is deliberately a single-process prototype with atomic JSON storage
 
 ## 10. What have you actually validated, and what is your next milestone?
 
-The implementation passed 42 regression tests covering security, parsing, pipeline validation and learning behavior, plus TypeScript, build, startup and browser smoke checks. Browser checks included a 390px viewport and found no page errors or page overflow on the tested path. AI responses in automated checks were mocked; live Gemini, SMTP and Firebase credentials remain unverified. Seed history is explicitly synthetic. Our next milestone is a small consented student pilot measuring plan completion, missed-work recovery and performance on unseen questions, alongside live-provider latency and cost. No improved-marks percentage is claimed today.
+The implementation passed 48 regression tests covering security, parsing, pipeline validation and learning behavior, plus TypeScript, build, startup and browser smoke checks. Browser checks included a 390px viewport and found no page errors or page overflow on the tested path. AI responses in automated checks were mocked; live Grok, SMTP and Firebase credentials remain unverified. Seed history is explicitly synthetic. Our next milestone is a small consented student pilot measuring plan completion, missed-work recovery and performance on unseen questions, alongside live-provider latency and cost. No improved-marks percentage is claimed today.
 
-**Evidence:** `tests/`, `STEP5_CHANGELOG.md`. The actual shipped stack is React 19, Express, Gemini and JSON persistence, not the MongoDB/Claude migration from the original brief.
+**Evidence:** `tests/`, `STEP5_CHANGELOG.md`. The actual shipped stack is React 19, Express, Grok and JSON persistence, not the MongoDB/Claude migration from the original brief.
